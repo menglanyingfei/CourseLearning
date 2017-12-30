@@ -1,12 +1,12 @@
 Java 
-中文
+
 Hello
 
 ifstream myfile("file.txt");
 string temp, data;
 if (!myfile.is_open())  
 {  
-	cout << "未成功打开文件" << endl;  
+	cout << "open file fail!" << endl; 聽 
 } 
 while(getline(myfile,temp))  
 {  
