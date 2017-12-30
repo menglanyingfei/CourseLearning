@@ -5,3 +5,7 @@
 之前课程的内容见我的码云地址:
 <br>
 https://gitee.com/menglanyingfei/projects
+
+其中, 现在的仓库包含的课程有:<br>
+**Linux**<br>
+**MFC可视化**<br>
