@@ -1,0 +1,31 @@
+﻿chmod 777 /home/jkx/ftp
+
+sudo apt-get install vsftpd
+
+#在vsftpd.conf最下面加入
+
+#add
+local_root=/home/jkx/ftp
+userlist_deny=no
+userlist_enable=yes
+userlist_file=/etc/allowed_users
+
+#新建文件
+sudo touch /etc/allowed_users
+加入: lixingyang
+
+#保存文件
+sudo service vsftpd restart
+
+sudo useradd -d /home/jkx/ftp -s /bin/bash lixingyang
+
+sudo passwd lixingyang
+#设置密码
+1504240317
+
+#ifconfig 查看本机 IP
+ifconfig
+
+
+
+
