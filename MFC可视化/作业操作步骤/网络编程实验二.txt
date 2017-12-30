@@ -1,0 +1,118 @@
+基于UDP的网络应用程序：
+
+工程名称：UDPXXXSrv，其中XXX是姓名全拼；
+
+（1）打开VS2010，点击File-New-Project；
+（2）在弹出的对话框中，点击Visual C++-Win32-Win32 Console Application；
+（3）在Name中输入UDPLIXINGYANGSrv，点击确定；
+（4）在弹出的对话框中，点击Next，继续点击Additional options-Empty project，点击Finish；
+
+（5）打开解决方案视图，展开UDPXXXSrv，鼠标右键点击Source Files；
+（6）在弹出的菜单中，点击Add-New Item；
+（7）在弹出的对话框中，点击C++ File（.cpp），在Name中输入：UdpXXXSrv.cpp，点击Add；
+（8）在UdpXXXSrv.cpp文件中，输入：
+#include <WinSock2.h>
+#include <stdio.h>
+
+void main()
+{
+	WORD wVersionRequested;
+	WSADATA wsaData;
+	int err;
+
+	wVersionRequested = MAKEWORD(1,1);
+
+	err = WSAStartup(wVersionRequested, &wsaData);
+	if (err != 0)
+		return;
+
+	if (LOBYTE(wsaData.wVersion) != 1 ||
+		HIBYTE(wsaData.wVersion) != 1) {
+		WSACleanup();
+		return;
+	}
+
+	SOCKET sockSrv = socket(AF_INET,SOCK_DGRAM,0);
+
+	SOCKADDR_IN addrSrv;
+	addrSrv.sin_addr.S_un.S_addr=htonl(INADDR_ANY);
+	addrSrv.sin_family=AF_INET;
+	addrSrv.sin_port=htons(6000);
+
+	bind(sockSrv,(SOCKADDR*)&addrSrv,sizeof(SOCKADDR));
+
+	SOCKADDR_IN addrClient;
+	int len = sizeof(SOCKADDR);
+	char recvBuf[100];
+	recvfrom(sockSrv,recvBuf,100,0,(SOCKADDR*)&addrClient,&len);
+	printf("%s\n",recvBuf);
+
+	closesocket(sockSrv);
+	WSACleanup();
+}
+
+（9）打开解决方案视图，右键点击UDPXXXSrv，在弹出的菜单中，选择属性；
+（10）在弹出的对话框中，点击配置属性，展开Linker，点击Input；
+（11）在右侧中，点击Additional Dependencies一项，然后在kernel32.lib的前面输入“ws2_32.lib;”；
+（12）同样，点击Configuration，选择Release，用同样的方式添加“ws2_32.lib;”；
+
+（13）点击“确定”，退出对话框；
+（14）按F7 build工程；此时，不应该有任何错误；
+
+（15）打开解决方案视图，右键点击最顶端的“Solution 'UDPXXSrv'”；
+（16）在弹出的菜单中，选择Add-New Project；
+（17）在弹出的对话框中，点击Visual C++-Win32-Win32 Console Application，在Name中输入：UDPLIXINGYANGClient，点击确定；
+
+（18）点击Next，选择Additional options-Empty project，点击Finish；
+
+（19）打开解决方案视图，展开UDPXXXClient，鼠标右键点击Source Files；
+（20）在弹出的菜单中，点击Add-New Item；
+（21）在弹出的对话框中，点击C++ File（.cpp），在Name中输入：UdpXXXClient.cpp，点击Add；
+（22）在UdpXXXClient.cpp文件中，输入：
+#include <WinSock2.h>
+#include <stdio.h>
+
+void main()
+{
+	WORD wVersionRequested;
+	WSADATA wsaData;
+	int err;
+
+	wVersionRequested = MAKEWORD(1,1);
+
+	err = WSAStartup(wVersionRequested,&wsaData);
+	if (err != 0)
+		return;
+
+	if (LOBYTE(wsaData.wVersion) != 1 ||
+		HIBYTE(wsaData.wVersion) != 1) {
+			WSACleanup();
+			return;
+	}
+
+	SOCKET sockClient = socket(AF_INET,SOCK_DGRAM,0);
+
+	SOCKADDR_IN addrSrv;
+	addrSrv.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+	addrSrv.sin_family = AF_INET;
+	addrSrv.sin_port = htons(6000);
+	
+	char sendBuf[]="This is a client";
+	sendto(sockClient,sendBuf,strlen(sendBuf)+1,0,(SOCKADDR*)&addrSrv,sizeof(SOCKADDR));
+
+	closesocket(sockClient);
+	WSACleanup();
+}
+
+（23）打开解决方案视图，右键点击UDPXXXClient，在弹出的菜单中，选择属性；
+（24）在弹出的对话框中，点击配置属性，展开Linker，点击Input；
+（25）在右侧中，点击Additional Dependencies一项，然后在kernel32.lib的前面输入“ws2_32.lib;”；
+（26）同样，点击Configuration，选择Release，用同样的方式添加“ws2_32.lib;”；
+
+（27）按F7 build工程；不应该有任何错误；
+
+（28）打开解决方案视图，鼠标右键点击UDPXXXSrv，选择Set as StartUp Project，然后按Ctrl+F5运行UDPXXXSrv.exe程序；
+
+（29）同样，鼠标右键点击UDPXXXClient，选择Set as StartUp Project，然后按Ctrl+F5运行UDPXXXClient.exe程序；
+
+（30）第1个窗口和第2个窗口都应该有字符串显示。

@@ -1,0 +1,121 @@
+多线程实验一：
+
+工程名称：MultiXXXThread，其中XXX是姓名全拼；
+
+（1）打开VS2010，点击File-New-Project；
+（2）在弹出的对话框中，点击Visual C++-Win32-Win32 Console Application；
+（3）在Name中输入MultiXXXThread，点击确定；
+（4）在弹出的对话框中，点击Next，继续点击Additional options-Empty project，点击Finish；
+
+（5）打开解决方案视图，展开MultiXXXThread，鼠标右键点击Source Files；
+（6）在弹出的菜单中，点击Add-New Item；
+（7）在弹出的对话框中，点击C++ File（.cpp），在Name中输入：MultiXXXThread.cpp，点击Add；
+（8）在MultiXXXThread.cpp文件中，输入：
+#include <Windows.h>
+#include <iostream>
+
+using namespace std;
+
+int counter=0;
+
+DWORD WINAPI Fun1Proc(LPVOID lpParameter);
+
+void main()
+{
+	HANDLE hThread1;
+	hThread1 = CreateThread(NULL,0,Fun1Proc,NULL,0,NULL);
+	while (++counter<=100) {
+		cout << "The main thread is running\n";
+		Sleep(50);
+	}
+	CloseHandle(hThread1);
+}
+
+DWORD WINAPI Fun1Proc(LPVOID lpParameter)
+{
+	while (++counter<=100) {
+		cout << "The thread 1 is running\n";
+		Sleep(50);
+	}
+	return 0;
+}
+
+（9）按F7 build工程，按Ctrl+F5运行程序，可以看到主线程与子线程交替输出信息。
+
+多线程实验二：同步实验
+
+（1）打开解决方案视图，右键点击最顶端的“Solution 'MultiXXXThread'”；
+（2）在弹出的菜单中，选择Add-New Project；
+（3）在弹出的对话框中，点击Visual C++-Win32-Win32 Console Application，在Name中输入：MultiXXXThreadSync，点击确定；
+
+（4）点击Next，选择Additional options-Empty project，点击Finish；
+
+（5）打开解决方案视图，展开MultiXXXThreadSync，鼠标右键点击Source Files；
+（6）在弹出的菜单中，点击Add-New Item；
+（7）在弹出的对话框中，点击C++ File（.cpp），在Name中输入：MultiXXXThreadSync.cpp，点击Add；
+（8）在MultiXXXThreadSync.cpp文件中，输入：
+#include <Windows.h>
+#include <iostream>
+
+using namespace std;
+
+DWORD WINAPI Fun1Proc(LPVOID lpParameter);
+
+DWORD WINAPI Fun2Proc(LPVOID lpParameter);
+
+int counter = 0;
+int tickets = 100;
+
+HANDLE hMutex;
+
+void main()
+{
+	HANDLE hThread1;
+	HANDLE hThread2;
+
+	hThread1 = CreateThread(NULL,0,Fun1Proc,NULL,0,NULL);
+	hThread2 = CreateThread(NULL,0,Fun2Proc,NULL,0,NULL);
+
+	hMutex = CreateMutex(NULL,FALSE,NULL);
+	
+	Sleep(4000);
+
+	CloseHandle(hThread1);
+	CloseHandle(hThread2);
+}
+
+DWORD WINAPI Fun1Proc(LPVOID lpParameter)
+{
+	while (TRUE) {
+		WaitForSingleObject(hMutex,INFINITE);
+		if (tickets > 0)
+			cout << "The thread1 is selling a ticket: No. " << tickets-- << endl;
+		else {
+			ReleaseMutex(hMutex);
+			break;
+		}
+		ReleaseMutex(hMutex);
+	}
+
+	return 0;
+}
+
+DWORD WINAPI Fun2Proc(LPVOID lpParameter)
+{
+	while (TRUE) {
+		WaitForSingleObject(hMutex,INFINITE);
+		if (tickets > 0)
+			cout << "The thread2 is selling a ticket: No. " << tickets-- << endl;
+		else {
+			ReleaseMutex(hMutex);
+			break;
+		}
+		ReleaseMutex(hMutex);
+	}
+
+	return 0;
+}
+
+（9）按F7 build工程；
+
+（10）打开解决方案视图，鼠标右键点击MultiXXXThreadSync，选择Set as StartUp Project，然后按Ctrl+F5运行程序，可以看到线程1和线程2正常售票；

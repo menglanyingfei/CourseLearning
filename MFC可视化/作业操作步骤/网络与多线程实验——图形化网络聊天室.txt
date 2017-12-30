@@ -1,0 +1,344 @@
+网络与多线程实验——图形化网络聊天室
+
+工程名称为NetLIXINGYANGChat，XXX是姓名全拼。
+
+TCPIP方式
+
+（1）打开VS2010；
+（2）点击菜单File-New-Project；
+（3）在弹出的对话框中，点击Visual C++-MFC，在右边窗口选择MFC Application，在Name中输入NetXXXChat，点击确定；
+
+（4）点击Next，选择Application type-Dialog based，点击Next，点击Next，点击Next，点击Finish；
+
+（5）打开资源视图，展开NetXXXChat-NetXXXChat.rc-Dialog，双击IDD_NETXXXCHAT_DIALOG；
+
+（6）删除对话框上的所有已存在的控件；
+
+（7）给对话框添加2个Edit控件，一个用于接收数据，一个用于发送数据，ID分别为IDC_EDIT_RECEIVE，IDC_EDIT_SEND，把它们的属性Multiline修改为True；IDC_EDIT_RECEIVE的属性Read Only为True；
+
+（8）无；
+
+（9）给对话框添加1个Button，Caption改名为“发送”，ID改为IDC_BUTTON_SEND；
+
+（10）打开文件stdafx.h，在文件末尾输入：
+#include <afxsock.h>
+
+（11）打开类视图，点击CNetXXXChatApp类，在类视图的下方窗口，双击InitInstance函数，编辑该函数，在该函数的最开始处，输入：
+	if (!AfxSocketInit()) {
+		AfxMessageBox(_T("加载套接字库失败！"));
+		return FALSE;
+	}
+
+（12）打开类视图，双击类CNetXXXChatDlg，找到“HICON m_hIcon;”，在下一行输入：
+	SOCKET m_socket;
+	BOOL InitSocket();
+
+（13）打开文件NetXXXChatDlg.cpp，在末尾输入：
+BOOL CNetXXXChatDlg::InitSocket()
+{
+	m_socket = socket(AF_INET,SOCK_DGRAM,0);
+	if (INVALID_SOCKET == m_socket) {
+		MessageBox(_T("套接字创建失败！"));
+		return FALSE;
+	}
+
+	SOCKADDR_IN addrSock;
+	addrSock.sin_family = AF_INET;
+	addrSock.sin_port = htons(6000);
+	addrSock.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
+
+	int retval;
+	retval = bind(m_socket,(SOCKADDR*)&addrSock,sizeof(SOCKADDR));
+	if (SOCKET_ERROR == retval) {
+		closesocket(m_socket);
+		MessageBox(_T("绑定失败！"));
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+（14）打开类视图，点击类CNetXXXChatDlg，在下方窗口双击OnInitDialog函数，在本函数末尾，“return TRUE;”的上一行，输入：
+InitSocket();
+
+（15）打开类视图，双击类CNetXXXChatDlg，找到“#pragma once”一行，在下一行输入：(转换: LPVOID)
+struct RECVPARAM
+{
+	SOCKET sock;
+	HWND hWnd;
+};
+
+找到“BOOL InitSocket();”一行，在下一行输入：
+	RECVPARAM m_structRecvParam;
+	HANDLE m_hThread;
+	static DWORD WINAPI RecvProc(LPVOID lpParameter);
+
+找到“CNetXXXChatDlg(CWnd* pParent = NULL);”一行，在下一行输入：
+	~CNetXXXChatDlg();
+
+（16）编辑OnInitDialog函数，找到“InitSocket()”一行，在下一行输入：
+	m_structRecvParam.sock = m_socket;
+	m_structRecvParam.hWnd = this->m_hWnd;
+	m_hThread = CreateThread(NULL,0, RecvProc,(LPVOID)&m_structRecvParam,0,NULL);
+
+（17）打开文件NetXXXChatDlg.cpp，在末尾输入：
+CNetXXXChatDlg::~CNetXXXChatDlg()
+{
+	CloseHandle(m_hThread);
+}
+
+DWORD WINAPI CNetXXXChatDlg::RecvProc(LPVOID lpParameter)
+{
+	SOCKET sock = ((RECVPARAM*)lpParameter)->sock;
+	HWND hWnd = ((RECVPARAM*)lpParameter)->hWnd;
+
+	SOCKADDR_IN addrFrom;
+	int len = sizeof(SOCKADDR);
+
+	char recvBuf[200];
+	char tempBuf[300];
+	int retval;
+
+	while (TRUE) {
+		retval = recvfrom(sock,recvBuf,200,0,(SOCKADDR*)&addrFrom,&len);
+		if (SOCKET_ERROR == retval)
+			break;
+
+		sprintf_s(tempBuf,"%s 说：%s",inet_ntoa(addrFrom.sin_addr),recvBuf);
+		::PostMessage(hWnd,WM_RECVDATA,0, (LPARAM)tempBuf);
+	}
+	return 0;
+}
+
+（18）打开文件stdafx.h，在文件末尾输入：
+#define WM_RECVDATA WM_USER+1
+
+（19）打开文件NetXXXChatDlg.h，找到“afx_msg HCURSOR OnQueryDragIcon();”一行，在下一行输入：
+afx_msg LRESULT OnRecvData(WPARAM wParam,LPARAM lParam);
+
+（20）打开文件NetXXXChatDlg.cpp，找到“ON_WM_QUERYDRAGICON()”一行，在下一行，输入：
+ON_MESSAGE(WM_RECVDATA,OnRecvData)
+
+（21）打开文件NetXXXChatDlg.cpp，在文件末尾，输入：
+LRESULT CNetXXXChatDlg::OnRecvData(WPARAM wParam,LPARAM lParam)
+{
+	char* c_str = (char*)lParam;
+	CString str(c_str);
+	CString strTemp;
+
+	GetDlgItemText(IDC_EDIT_RECEIVE,strTemp);
+	str+=_T("\r\n");
+	str+=strTemp;
+	SetDlgItemText(IDC_EDIT_RECEIVE,str);
+
+	return TRUE;
+}
+
+（22）打开类视图，右键单击类CNetXXXChatDlg，选择“类向导”；
+（23）在弹出的对话框中，点击Commands-IDC_BUTTON_SEND，双击它，选择确定，选择确定，退出对话框，编辑OnClickedButtonSend()函数，输入：
+void CNetXXXChatDlg::OnClickedButtonSend()
+{
+	// TODO: Add your control notification handler code here
+	SOCKADDR_IN addrTo;
+	addrTo.sin_family = AF_INET;
+	addrTo.sin_port = htons(6000);
+	addrTo.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+
+	CString strSend;
+	GetDlgItemText(IDC_EDIT_SEND,strSend);
+	char c_str[300];
+	wcstombs(c_str,strSend,2*wcslen(strSend)+1);
+	sendto(m_socket,c_str,strSend.GetLength()+1,0,(SOCKADDR*)&addrTo,sizeof(SOCKADDR));
+	SetDlgItemText(IDC_EDIT_SEND,_T(""));
+}
+
+下面将程序分为服务器端与客户端：
+（24）进入目录NetXXXChat，新建目录NetXXXChatSrv；
+（25）将其他所有文件和目录拖入到目录NetXXXChatSrv中；
+（26）新建目录NetXXXChatClient；
+（27）复制目录NetXXXChatSrv/NetXXXChat到目录NetXXXChatClient中；
+（28）进入目录NetXXXChatSrv；
+（29）打开解决方案文件NetXXXChat，进入VS2010中；
+
+（30）此时解决方案视图中，应该有一个项目NetXXXChat，并且处于活动状态（黑体显示）；
+（31）在解决方案视图中，最顶端“Solution 'NetXXXChat'”处，鼠标右键点击，Add-Existing Project；
+（32）在弹出的对话框中，双击目录NetXXXChatClient，双击目录NetXXXChat，然后选择NetXXXChat文件，重命名为NetXXXChatClient，再点击打开；
+（33）这样，新添加了一个NetXXXChatClient项目，并且处于非活动状态（非黑体显示）；
+
+（34）按F7 build工程，此时，应该没有任何错误；
+
+（35）打开解决方案视图，双击打开NetXXXChat项目中的NetXXXChatDlg.h文件，找到一行“SOCKET m_socket;”，在它的下一行输入：
+	static SOCKET m_socketClient;
+	static SOCKADDR_IN m_addrClient;
+
+（36）打开解决方案视图，双击打开NetXXXChat项目中的NetXXXChatDlg.cpp文件，
+找到
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+在下面一行输入：
+SOCKET CNetChatDlg::m_socketClient;
+SOCKADDR_IN CNetChatDlg::m_addrClient;
+
+找到InitSocket()函数，用下面的内容替换它：
+BOOL CNetXXXChatDlg::InitSocket()
+{
+	m_socket = socket(AF_INET,SOCK_STREAM,0);
+	if (INVALID_SOCKET == m_socket) {
+		MessageBox(_T("套接字创建失败！"));
+		return FALSE;
+	}
+
+	SOCKADDR_IN addrSock;
+	addrSock.sin_family = AF_INET;
+	addrSock.sin_port = htons(6000);
+	addrSock.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
+
+	int retval;
+	retval = bind(m_socket,(SOCKADDR*)&addrSock,sizeof(SOCKADDR));
+	if (SOCKET_ERROR == retval) {
+		closesocket(m_socket);
+		MessageBox(_T("绑定失败！"));
+		return FALSE;
+	}
+	listen(m_socket,5);
+
+	return TRUE;
+}
+
+找到RecvProc(LPVOID lpParameter)函数，用下面的内容替换它：
+DWORD WINAPI CNetXXXChatDlg::RecvProc(LPVOID lpParameter)
+{
+	SOCKET sock = ((RECVPARAM*)lpParameter)->sock;
+	HWND hWnd = ((RECVPARAM*)lpParameter)->hWnd;
+
+	int len = sizeof(SOCKADDR);
+
+	char recvBuf[200];
+	char tempBuf[300];
+	int retval;
+
+	m_socketClient = accept(sock,(SOCKADDR*)&m_addrClient,&len);
+	while (TRUE) {
+		retval = recv(m_socketClient,recvBuf,200,0);
+		if (SOCKET_ERROR == retval)
+			break;
+
+		sprintf_s(tempBuf,"%s 说：%s",inet_ntoa(m_addrClient.sin_addr),recvBuf);
+		::PostMessage(hWnd,WM_RECVDATA,0,(LPARAM)tempBuf);
+	}
+	return 0;
+}
+
+找到OnClickedButtonSend()函数，用下面内容替换它：
+void CNetXXXChatDlg::OnClickedButtonSend()
+{
+	// TODO: Add your control notification handler code here
+	CString strSend;
+	GetDlgItemText(IDC_EDIT_SEND,strSend);
+	char c_str[300];
+	wcstombs(c_str,strSend,2*wcslen(strSend)+1);
+
+	send(m_socketClient,c_str,strlen(c_str)+1,0);
+	SetDlgItemText(IDC_EDIT_SEND,_T(""));
+
+	CString strTemp;
+	GetDlgItemText(IDC_EDIT_RECEIVE,strTemp);
+	strSend+=_T("\r\n");
+	strSend+=strTemp;
+	SetDlgItemText(IDC_EDIT_RECEIVE,strSend);
+}
+
+
+（37）打开解决方案视图，双击打开NetXXXChatClient项目中的NetXXXChatDlg.h文件，找到一行“SOCKET m_socket;”，在它的下一行输入：
+	static SOCKADDR_IN m_addrSrv;
+
+（38）打开解决方案视图，双击打开NetXXXChatClient项目中的NetXXXChatDlg.cpp文件，
+
+找到
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+在下面一行输入：
+SOCKADDR_IN CNetChatDlg::m_addrSrv;
+
+找到InitSocket()函数，用下面的内容替换：
+BOOL CNetChatDlg::InitSocket()
+{
+	m_socket = socket(AF_INET,SOCK_STREAM,0);
+	if (INVALID_SOCKET == m_socket) {
+		MessageBox(_T("套接字创建失败！"));
+		return FALSE;
+	}
+	m_addrSrv.sin_family = AF_INET;
+	m_addrSrv.sin_port = htons(6000);
+	m_addrSrv.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+	connect(m_socket,(SOCKADDR*)&m_addrSrv,sizeof(SOCKADDR));
+
+	return TRUE;
+}
+
+找到OnClickedButtonSend()函数，用下面内容替换：
+void CNetChatDlg::OnClickedButtonSend()
+{
+	// TODO: Add your control notification handler code here
+
+	CString strSend;
+	GetDlgItemText(IDC_EDIT_SEND,strSend);
+	char c_str[300];
+	wcstombs(c_str,strSend,2*wcslen(strSend)+1);
+	send(m_socket,c_str,strlen(c_str)+1,0);
+	SetDlgItemText(IDC_EDIT_SEND,_T(""));
+
+	CString strTemp;
+	GetDlgItemText(IDC_EDIT_RECEIVE,strTemp);
+	strSend+=_T("\r\n");
+	strSend+=strTemp;
+	SetDlgItemText(IDC_EDIT_RECEIVE,strSend);
+}
+
+找到函数RecvProc(LPVOID lpParameter)，用下面内容替换它：
+DWORD WINAPI CNetChatDlg::RecvProc(LPVOID lpParameter)
+{
+	SOCKET sock = ((RECVPARAM*)lpParameter)->sock;
+	HWND hWnd = ((RECVPARAM*)lpParameter)->hWnd;
+
+	int len = sizeof(SOCKADDR);
+
+	char recvBuf[200];
+	char tempBuf[300];
+	int retval;
+
+	while (TRUE) {
+		retval = recv(sock,recvBuf,200,0);
+		if (SOCKET_ERROR == retval)
+			break;
+
+		sprintf_s(tempBuf,"%s 说：%s",inet_ntoa(m_addrSrv.sin_addr),recvBuf);
+		::PostMessage(hWnd,WM_RECVDATA,0,(LPARAM)tempBuf);
+	}
+	return 0;
+}
+
+（39）按F7 build工程，不应该出现错误；
+
+（40）打开解决方案视图，右键点击NetChat，选择Set as StartUp Project，按Ctrl+F5运行服务器端程序；
+
+（41）打开解决方案视图，右键点击NetChatClient，选择Set as StartUp Project，按Ctrl+F5运行客户端程序；
+
+（42）服务器端与客户端程序可以互发消息；
+
+（43）添加支持中文功能：
+
+分别打开工程NetXXXChat和NetXXXChatClient中的stdafx.h文件，在文件末尾输入：
+#include <locale>
+
+分别打开工程NetXXXChat和NetXXXChatClient中的NetXXXChat.cpp文件，找到函数InitInstance()，在最开始处输入：
+	setlocale(LC_ALL,"chs");
+
+（44）按F7 build工程；
+（45）打开解决方案视图，右键点击NetChat，选择Set as StartUp Project，按Ctrl+F5运行服务器端程序；
+
+（46）打开解决方案视图，右键点击NetChatClient，选择Set as StartUp Project，按Ctrl+F5运行客户端程序；
+
+（47）服务器端与客户端程序可以互发中文消息了；

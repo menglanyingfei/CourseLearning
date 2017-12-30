@@ -1,0 +1,52 @@
+启动画面实验
+
+项目名称：MyXXXSplash，XXX是你的姓名全拼；
+
+（1）打开VS2010；
+（2）点击File-New-Project-VisualC++-MFC-MFC Application，在对话框的Name一栏中输入工程名称MyXXXSplash；
+（3）点击确定；
+（4）在弹出的对话框中，点击Next，点击Application type-Single document，点击Project style-MFC standard；点击Visual style and colors-Windows Native/Default；
+（5）点击Next，点击Next，点击Next，点击Next；
+（6）点击Command bars（menu/toolbar/ribbon)-Use a classic menu，并且选中Use a classic docking toolbar；
+（7）点击Next，点击Next，点击Finish；
+（8）按F7，build工程；
+（9）按Ctrl-F5，运行工程；
+（10）你将看到一个标准的VC SDI窗口界面；
+
+（11）复制Splash.cpp和Splash.h文件到目录MyXXXSplash/MyXXXSplash中，复制Splash16.bmp到目录MyXXXSplash/MyXXXSplash/res中；
+
+（12）打开解决方案视图，右键点击MyXXXSplash，选择Add-Existing Item，在弹出的对话框中选择Splash.cpp和Splash.h；
+
+（13）打开资源视图，展开MyXXXSplash.rc，右键点击它，选择Add Resource，在弹出的对话框中，点击Bitmap，点击Import；
+
+（14）在弹出的对话框中，选取MyXXXSplash/MyXXXSplash/res/Splash16.bmp；
+
+（15）打开资源视图，展开MyXXXSplash.rc，展开Bitmap，修改IDB_BITMAP1为IDB_SPLASH；
+
+（16）打开类视图，双击CMyXXXSplashApp类，找到“#include "resource.h"”一行，在下一行输入：
+#include "Splash.h"
+
+（17）打开类似图，点击CMyXXXSplashApp类，在下方窗口中，双击InitInstance()函数，找到“ParseCommandLine(cmdInfo);”一行，在下一行输入：
+	CSplashWnd::EnableSplashScreen(cmdInfo.m_bShowSplash);
+
+（18）打开类视图，双击CMainFrame，找到“#pragma once”一行，在下一行输入：
+#include "Splash.h"
+
+（19）打开类视图，点击CMainFrame，在下方窗口中，双击OnCreate()函数，在该函数的最后“return 0;”之前添加：
+	CSplashWnd::ShowSplashScreen(this);
+
+（20）打开类似图，右键点击CMyXXXSplashApp类，选择类向导；
+
+（21）在弹出的对话框中选择，点击Virtual Functions-PreTranslateMessage，双击它，点击确定；
+
+（22）编辑该函数，输入：
+BOOL CMyXXXSplashApp::PreTranslateMessage(MSG* pMsg)
+{
+	// TODO: Add your specialized code here and/or call the base class
+	if (CSplashWnd::PreTranslateAppMessage(pMsg))
+		return TRUE;
+
+	return CWinApp::PreTranslateMessage(pMsg);
+}
+
+（23）按F7 build工程，按Ctrl+F5运行程序，可以看到一个有启动画面的SDI应用程序；

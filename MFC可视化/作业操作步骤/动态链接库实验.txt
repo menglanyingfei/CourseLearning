@@ -1,0 +1,108 @@
+动态链接库实验：
+
+解决方案名称MyXXXDLL，XXX是你的姓名全拼；
+
+（1）打开VS2010；
+（2）点击菜单File-New-Project；
+（3）在弹出的对话框中，点击Visual C++-MFC，在右边窗口选择MFC Application，在Name中输入MyXXXDLL，点击确定；
+
+（4）点击Next，选择Application type-Dialog based，点击Next，点击Next，点击Next，点击Finish；
+
+（5）打开资源视图，展开MyXXXDLL-MyXXXDLL.rc-Dialog；
+（6）双击IDD_MYXXXDLL_DIALOG，打开对话框；
+（7）删除对话框上的Static静态文本控件；
+（8）给对话框添加一个Edit Control，二个Button Control；
+（9）将它们的ID号分别改为IDC_EDIT_NUM、IDC_BUTTON_SCALL、IDC_BUTTON_DCALL；
+
+（10）修改IDC_BUTTON_SCALL、IDC_BUTTON_DCALL的Caption分别为：Static Call和Dynamic Call；
+
+（11）打开类视图，右键点击CMyXXXDLLDlg，选择类向导；
+（12）在弹出的对话框中，点击Member Variables，双击IDC_EDIT_NUM；
+（13）在弹出的对话框中，为Member variable name输入m_nNum，为Category选取Value，为Variable type选取int，点击确定；
+
+（14）回到类向导对话框，点击Commands，分别双击IDC_BUTTON_DCALL和IDC_BUTTON_SCALL；
+
+（15）点击确定，退出对话框；
+
+（16）打开解决方案视图，在该视图的最上方，右键单击“Solution MyXXXDLL（1 project）”，选择Add-New Project；
+
+（17）在弹出的对话框中，点击Visual C++-Win32，点击Win32 Project，然后在Name中输入：MyXXXFactorial，点击确定；
+
+（18）在弹出的对话框中，点击Next，点击Application type-DLL，点击Finish；
+
+（19）按F7 build工程，此时应该没有任何错误；
+
+（20）打开解决方案视图，右键点击MyXXXFactorial，选取Add-New Item；
+（21）在弹出的对话框中，点击Header File(.h)，为Name输入：MyXXXFactorial.h，点击确定；
+
+（22）在文件MyXXXFactorial.h中，输入：
+#ifndef MY_XXX_FACTORIAL_H
+#define MY_XXX_FACTORIAL_H
+
+extern "C" double __declspec(dllexport) factorial(int n);
+
+#endif
+
+（23）打开文件MyXXXFactorial.cpp，用下面内容替换它：
+#include "stdafx.h"
+#include "MyXXXFactorial.h"
+
+double factorial(int n)
+{
+	int i;
+	double r=1.0;
+
+	for (i=2;i<=n;i++)
+		r*=i;
+
+	return r;
+}
+
+注意：上面的"MyXXXFactorial.h"要替换成相应的文件名；
+
+（24）按F7 build工程，将在Debug目录下生成2个要使用的文件：MyXXXFactorial.dll和MyXXXFactorial.lib；
+
+（25）在MyXXXDLL/MyXXXDLL目录下新建一个子目录MyXXXFactorial，将以下三个文件复制到该目录中：MyXXXFactorial.dll、MyXXXFactorial.lib、MyXXXFactorial.h；
+
+（26）打开类视图，点击CMyXXXDLLDlg，在下方窗口中双击OnClickedButtonScall函数，首先移到文件最开始处，找到“#include "afxdialogex.h"”一行，输入：
+#include "MyXXXFactorial\MyXXXFactorial.h"
+#pragma comment(lib,"MyXXXFactorial\\MyXXXFactorial.lib")
+
+然后，继续编辑改函数，输入：
+void CMyDLLDlg::OnClickedButtonScall()
+{
+	// TODO: Add your control notification handler code here
+	UpdateData(TRUE);
+	CString str;
+	double result;
+	result = factorial(m_nNum);
+	str.Format(L"%lf",result);
+	MessageBox(str);
+}
+
+（27）按F7 build，按Ctrl+F5运行程序，输入一个整数，点击Static Call，计算阶乘；
+
+（28）打开类视图，点击CMyXXXDLLDlg，在下方窗口中双击OnClickedButtonDcall函数，用下面的内容替换它：
+typedef double (*FactorialFunc)(int);
+void CMyDLLDlg::OnClickedButtonDcall()
+{
+	// TODO: Add your control notification handler code here
+	UpdateData(TRUE);
+	HINSTANCE hInstLib = LoadLibrary(L"MyXXXFactorial\\MyXXXFactorial.dll");
+	if (hInstLib == NULL)
+		FreeLibrary(hInstLib);
+	FactorialFunc factorial = (FactorialFunc)GetProcAddress(hInstLib,"factorial");
+	if (factorial == NULL)
+		FreeLibrary(hInstLib);
+
+	CString str;
+	double result;
+	result = factorial(m_nNum);
+	str.Format(L"%lf",result);
+	MessageBox(str);
+	FreeLibrary(hInstLib);
+}
+
+注意："MyXXXFactorial\\MyXXXFactorial.dll"要做相应的修改；
+
+（29）按F7 build工程，按Ctrl+F5运行程序，输入一个整数，点击Dynamic Call，计算阶乘；

@@ -1,0 +1,138 @@
+（六）对话框实验：
+（1）打开资源视图；
+（2）鼠标点击展开HelloWorld-HelloWorld.rc-Dialog，右键点击Dialog，选择“Insert Dialog”，将生成一个对话框；
+（3）将该对话框的ID号改为IDD_SELECTCOLOR；
+（4）将工具箱中的Check Box拖入对话框中，在属性窗口中，修改ID号为IDC_RED，Caption为Red；
+（5）同样方式，创建1个Check Box，ID号为IDC_GREEN，Caption为Green；
+（6）再次创建1个Check Box，ID号为IDC_BLUE，Caption为Blue；
+（7）使用VS2010工具栏上的对齐工具，对齐这3个Check Box；
+（8）在VS2010客户区中双击对话框IDD_SELECTCOLOR的标题栏，在弹出的对话框中：Class name中输入CMySelectColorDlg，其它参数保持不变，点击Finish；
+（9）这样就生成了一个新类CMySelectColorDlg；
+（10）打开类视图，右键点击CMySelectColorDlg类，选择Class Wizard（类向导）；
+（11）点击Member Variables；
+（12）双击IDC_RED，在弹出的对话框中，输入：Member variable name中输入m_bRed，Category中选择Value，Variable type中选择BOOL，点击OK；
+（13）用同样的方式创建m_bGreen和m_bBlue；
+（14）最后点击OK退出对话框；
+（15）打开资源视图；
+（16）打开Menu-IDR_MAINFRAME菜单；
+（17）在菜单项Blue下，鼠标右键点击，选择Insert Separator，插入一个分隔条；
+（18）在分隔条下一行，键入&Select Color1，在下一行键入Select &Color2；
+（19）鼠标右键点击&Select Color1菜单项，选择Add Event Handler；
+（20）在弹出的对话框中，选择Class list-CHelloWorldView，其它保持不变，点击Add and Edit；
+（21）返回菜单编辑处，用同样的方法，给Select &Color2菜单项添加事件处理程序；
+（22）打开HelloWorldView.h文件，找到#pragma once一行，在下一行输入：
+#include "MySelectColorDlg.h"
+
+（23）找到HelloWorldView.cpp中的函数OnColorSelectcolor1，输入：
+void CHelloWorldView::OnColorSelectcolor1()
+{
+	// TODO: Add your command handler code here
+	CMySelectColorDlg dlgSelectColor;
+
+	if (dlgSelectColor.DoModal()==IDOK) {
+		this->m_bRed = dlgSelectColor.m_bRed;
+		this->m_bGreen = dlgSelectColor.m_bGreen;
+		this->m_bBlue = dlgSelectColor.m_bBlue;
+
+		Invalidate();
+	}
+}
+
+（24）按F7 build工程，按Ctrl-F5运行程序；
+（25）点击菜单Select Color1，将会弹出一个模式对话框，选择颜色，并确定后，可以改变文本颜色；
+
+（26）打开HelloWorldView.h，找到BOOL m_bBlue一行，在下一行输入：
+	CMySelectColorDlg m_dlgSelectColor;
+
+（27）打开HelloWorldView.cpp，找到OnColorSelectcolor2函数，输入：
+void CHelloWorldView::OnColorSelectcolor2()
+{
+	// TODO: Add your command handler code here
+	if (!m_dlgSelectColor.m_hWnd)
+		m_dlgSelectColor.Create(IDD_SELECTCOLOR);
+
+	m_dlgSelectColor.ShowWindow(SW_SHOW);
+}
+
+（28）打开类视图；
+（29）右键点击CMySelectColorDlg类，点击Class Wizard（类向导）；
+（30）在打开的对话框中，点击Commands-IDOK，双击Messages-BN_CLICKED，在弹出的对话框中点击确定关闭该对话框，点击Edit Code编辑该函数。
+（31）将光标移动到本文件的最开始处，在#include "HelloWorld.h"的下一行输入：
+#include "MainFrm.h"
+#include "HelloWorldDoc.h"
+#include "HelloWorldView.h"
+
+（32）回到函数OnBnClickedOk处，输入：
+void CMySelectColorDlg::OnBnClickedOk()
+{
+	// TODO: Add your control notification handler code here
+	UpdateData(TRUE);
+
+	((CHelloWorldView*)(((CMainFrame*)AfxGetMainWnd())->GetActiveView()))->m_bRed = this->m_bRed;
+	((CHelloWorldView*)(((CMainFrame*)AfxGetMainWnd())->GetActiveView()))->m_bGreen = this->m_bGreen;
+	((CHelloWorldView*)(((CMainFrame*)AfxGetMainWnd())->GetActiveView()))->m_bBlue = this->m_bBlue;
+
+	::InvalidateRect(((CMainFrame*)AfxGetMainWnd())->GetSafeHwnd(),NULL,NULL);
+
+	CDialogEx::OnOK();
+}
+
+（33）按F7 build工程，按Ctrl-F5运行程序；
+（34）点击Select Color2菜单，选择颜色，按确定；
+
+（35）新建一个对话框，ID号为IDD_SUM；
+（36）按教材P154图4.13设计好对话框：“加数”为一个Static Text，其右边配套的控件为Edit Control，ID号为IDC_ADD1；“被加数”为一个Static Text，其右边配套的控件为Edit Control，ID号为IDC_ADD2；“两数之和”为一个Static Text，其右边配套的控件为Edit Control，ID号为IDC_SUM，Disable为True；
+（37）将Cancel按钮的Caption改为“相加”，ID号改为IDC_ADD；
+（38）双击该对话框的标题栏，新建一个类，在弹出的对话框上输入：
+Class Name：CMySumDlg，点击Finish；
+（39）打开资源视图，双击菜单Menu-IDR_MAINFRAME，打开菜单，在Color的右边输入：&Sum，在Sum菜单的下一行输入&Add two numbers 1，接着在下一行输入A&dd two numbers 2；
+（40）在Add two numbers 1菜单项处鼠标右键弹出菜单，选择“Add Event Handler”；
+（41）在弹出的对话框中，选择Class list-CHelloWorldView，其它参数保持不变，点击Finish；
+（42）返回菜单，用同样的方式为Add two numbers 2创建事件处理程序；
+（43）打开类视图，在CMySumDlg处鼠标右键弹出菜单，选择Class Wizard（类向导）；
+（44）在弹出的对话框中，点击Member Variables，分别为IDC_ADD1、IDC_ADD2、IDC_SUM控件添加int类型的m_nAdd1、m_nAdd2、m_nSum：例如，双击IDC_ADD1，在弹出的对话框中，Member variable name中输入m_nAdd1，Category选择Value，Variable type中选择int，点击OK；
+
+（45）完成后，再次点击OK，退出对话框；
+（46）打开HelloWorldView.h，在文件最开始处，找到#include "MySelectColorDlg.h"一行，输入：
+#include "MySumDlg.h"
+
+（47）回到HelloWorldView.cpp，找到函数OnSumAddtwonumbers，输入：
+void CHelloWorldView::OnSumAddtwonumbers()
+{
+	// TODO: Add your command handler code here
+	CMySumDlg dlgSum;
+
+	dlgSum.DoModal();
+}
+
+（48）打开类视图，右键点击CMySumDlg，选择Class Wizard；
+（49）在弹出的对话框中，选择Commands-IDC_ADD，双击IDC_ADD，在弹出的对话框中，点击确定，然后点击Edit Code；
+（50）在函数OnClickedAdd中输入：
+void CMySumDlg::OnClickedAdd()
+{
+	// TODO: Add your control notification handler code here
+	UpdateData(TRUE);
+
+	m_nSum=m_nAdd1+m_nAdd2;
+
+	UpdateData(FALSE);
+}
+
+（51）按F7 build程序，按Ctrl-F5运行程序；
+（52）点击Add two numbers 1菜单，输入2个数据，点击相加，观察结果；
+
+（53）打HelloWorldView.h，找到CMySelectColorDlg m_dlgSelectColor一行，在其下一行输入：
+	CMySumDlg m_dlgSum;
+
+（54）打开HelloWorldView.cpp，找到OnSumAddtwonumbers2函数，输入：
+void CHelloWorldView::OnSumAddtwonumbers2()
+{
+	// TODO: Add your command handler code here
+	if (!m_dlgSum.m_hWnd)
+		m_dlgSum.Create(IDD_SUM);
+
+	m_dlgSum.ShowWindow(SW_SHOW);
+}
+
+（55）按F7 build程序，按Ctrl-F5运行程序；
+（56）点击Add two numbers 2菜单，输入2个数据，点击相加，观察结果；

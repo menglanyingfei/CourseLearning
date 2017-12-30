@@ -1,0 +1,122 @@
+基于UDP的网络聊天应用程序：
+
+（1）在资源管理器中，新建一个目录UDPChat_CMD，然后将实验二完成的整个解决方案（应包括2个项目UDPSrv和UDPClient）目录复制到UDPChat_CMD中；
+（2）在UdpXXXSrv.cpp文件中，输入：
+#include <WinSock2.h>
+#include <stdio.h>
+
+void main()
+{
+	WORD wVersionRequested;
+	WSADATA wsaData;
+	int err;
+
+	wVersionRequested = MAKEWORD(1,1);
+
+	err = WSAStartup(wVersionRequested, &wsaData);
+	if (err != 0)
+		return;
+
+	if (LOBYTE(wsaData.wVersion) != 1 ||
+		HIBYTE(wsaData.wVersion) != 1) {
+		WSACleanup();
+		return;
+	}
+
+	SOCKET sockSrv = socket(AF_INET,SOCK_DGRAM,0);
+
+	SOCKADDR_IN addrSrv;
+	addrSrv.sin_addr.S_un.S_addr=htonl(INADDR_ANY);
+	addrSrv.sin_family=AF_INET;
+	addrSrv.sin_port=htons(6000);
+
+	bind(sockSrv,(SOCKADDR*)&addrSrv,sizeof(SOCKADDR));
+
+	char recvBuf[100];
+	char sendBuf[100];
+	char tempBuf[200];
+
+	SOCKADDR_IN addrClient;
+	int len = sizeof(SOCKADDR);
+	while (1) {
+		recvfrom(sockSrv,recvBuf,100,0,(SOCKADDR*)&addrClient,&len);
+		if ('q' == recvBuf[0]) {
+			sendto(sockSrv,"q",strlen("q")+1,0,(SOCKADDR*)&addrClient,len);
+			printf("Chat end!\n");
+			break;
+		}
+
+		sprintf_s(tempBuf,"%s say : %s",inet_ntoa(addrClient.sin_addr),recvBuf);
+		printf("%s\n",tempBuf);
+
+		printf("Please input data:\n");
+		gets_s(sendBuf);
+		sendto(sockSrv,sendBuf,strlen(sendBuf)+1,0,(SOCKADDR*)&addrClient,len);
+	}
+
+	closesocket(sockSrv);
+	WSACleanup();
+}
+
+（3）在UdpXXXClient.cpp文件中，输入：
+#include <WinSock2.h>
+#include <stdio.h>
+
+void main()
+{
+	WORD wVersionRequested;
+	WSADATA wsaData;
+	int err;
+
+	wVersionRequested = MAKEWORD(1,1);
+
+	err = WSAStartup(wVersionRequested,&wsaData);
+	if (err != 0)
+		return;
+
+	if (LOBYTE(wsaData.wVersion) != 1 ||
+		HIBYTE(wsaData.wVersion) != 1) {
+			WSACleanup();
+			return;
+	}
+
+	SOCKET sockClient = socket(AF_INET,SOCK_DGRAM,0);
+
+	SOCKADDR_IN addrSrv;
+	addrSrv.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+	addrSrv.sin_family = AF_INET;
+	addrSrv.sin_port = htons(6000);
+	
+	char recvBuf[100];
+	char sendBuf[100];
+	char tempBuf[200];
+
+	int len = sizeof(SOCKADDR);
+	while (1) {
+		printf("Please input data:\n");
+		gets_s(sendBuf);
+		sendto(sockClient,sendBuf,strlen(sendBuf)+1,0,(SOCKADDR*)&addrSrv,len);
+		recvfrom(sockClient,recvBuf,100,0,(SOCKADDR*)&addrSrv,&len);
+		if ('q' == recvBuf[0]) {
+			sendto(sockClient,"q",strlen("q")+1,0,(SOCKADDR*)&addrSrv,len);
+			printf("Chat end!\n");
+			break;
+		}
+
+		sprintf_s(tempBuf,"%s say: %s",inet_ntoa(addrSrv.sin_addr),recvBuf);
+		printf("%s\n",tempBuf);
+	}
+
+	closesocket(sockClient);
+	WSACleanup();
+}
+
+（4）按F7 build工程；不应该有任何错误；
+
+（5）打开解决方案视图，鼠标右键点击UDPXXXSrv，选择Set as StartUp Project，然后按Ctrl+F5运行UDPXXXSrv.exe程序；
+
+（6）同样，鼠标右键点击UDPXXXClient，选择Set as StartUp Project，然后按Ctrl+F5运行UDPXXXClient.exe程序；
+
+（7）在第2个窗口中，应该有字符串提示输入数据，输入字符串并回车；
+（8）在第1个窗口中，应该有字符串显示了，依提示输入字符串并回车；
+（9）此后，交替进行上述操作；若要退出，可以输入q并回车；

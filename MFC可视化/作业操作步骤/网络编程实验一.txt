@@ -1,0 +1,137 @@
+基于TCP的网络应用程序：
+
+工程名称：TCPXXXSrv，其中XXX是姓名全拼；
+
+（1）打开VS2010，点击File-New-Project；
+（2）在弹出的对话框中，点击Visual C++-Win32-Win32 Console Application；
+（3）在Name中输入TCPXXXSrv，点击确定；
+（4）在弹出的对话框中，点击Next，继续点击Additional options-Empty project，点击Finish；
+
+（5）打开解决方案视图，展开TCPXXXSrv，鼠标右键点击Source Files；
+（6）在弹出的菜单中，点击Add-New Item；
+（7）在弹出的对话框中，点击C++ File（.cpp），在Name中输入：TcpXXXSrv.cpp，点击Add；
+（8）在TcpXXXSrv.cpp文件中，输入：
+#include <WinSock2.h>
+#include <stdio.h>
+
+void main()
+{
+	WORD wVersionRequested;
+	WSADATA wsaData;
+	int err;
+
+	wVersionRequested = MAKEWORD(1,1);
+
+	err = WSAStartup(wVersionRequested, &wsaData);
+	if (err != 0)
+		return;
+
+	if (LOBYTE(wsaData.wVersion) != 1 ||
+		HIBYTE(wsaData.wVersion) != 1) {
+		WSACleanup();
+		return;
+	}
+
+	SOCKET sockSrv = socket(AF_INET,SOCK_STREAM,0);
+
+	SOCKADDR_IN addrSrv;
+	addrSrv.sin_addr.S_un.S_addr=htonl(INADDR_ANY);
+	addrSrv.sin_family=AF_INET;
+	addrSrv.sin_port=htons(6000);
+
+	bind(sockSrv,(SOCKADDR*)&addrSrv,sizeof(SOCKADDR));
+	listen(sockSrv,5);
+
+	SOCKADDR_IN addrClient;
+	int len = sizeof(SOCKADDR);
+
+	while(1) {
+		SOCKET sockConn = accept(sockSrv,(SOCKADDR*)&addrClient,&len);
+		char sendBuf[100];
+		sprintf_s(sendBuf,"Welcome %s to Server",inet_ntoa(addrClient.sin_addr));
+
+		send(sockConn,sendBuf,strlen(sendBuf)+1,0);
+		char recvBuf[100];
+		recv(sockConn,recvBuf,100,0);
+		printf("%s\n",recvBuf);
+
+		closesocket(sockConn);
+
+		printf("Input \'x' for exit, or continue.\n");
+		if (getchar()=='x')
+			break;
+	}
+	closesocket(sockSrv);
+	WSACleanup();
+}
+
+（9）打开解决方案视图，右键点击TCPXXXSrv，在弹出的菜单中，选择属性；
+（10）在弹出的对话框中，点击配置属性，展开Linker，点击Input；
+（11）在右侧中，点击Additional Dependencies一项，然后在kernel32.lib的前面输入“ws2_32.lib;”；
+（12）同样，点击Configuration，选择Release，用同样的方式添加“ws2_32.lib;”；
+
+（13）点击“确定”，退出对话框；
+（14）按F7 build工程；此时，不应该有任何错误；
+
+（15）打开解决方案视图，右键点击最顶端的“Solution 'TCPXXSrv'”；
+（16）在弹出的菜单中，选择Add-New Project；
+（17）在弹出的对话框中，点击Visual C++-Win32-Win32 Console Application，在Name中输入：TcpXXXClient，点击确定；
+
+（18）点击Next，选择Additional options-Empty project，点击Finish；
+
+（19）打开解决方案视图，展开TCPXXXClient，鼠标右键点击Source Files；
+（20）在弹出的菜单中，点击Add-New Item；
+（21）在弹出的对话框中，点击C++ File（.cpp），在Name中输入：TcpXXXClient.cpp，点击Add；
+（22）在TcpXXXClient.cpp文件中，输入：
+#include <WinSock2.h>
+#include <stdio.h>
+
+void main()
+{
+	WORD wVersionRequested;
+	WSADATA wsaData;
+	int err;
+
+	wVersionRequested = MAKEWORD(1,1);
+
+	err = WSAStartup(wVersionRequested,&wsaData);
+	if (err != 0)
+		return;
+
+	if (LOBYTE(wsaData.wVersion) != 1 ||
+		HIBYTE(wsaData.wVersion) != 1) {
+			WSACleanup();
+			return;
+	}
+
+	SOCKET sockClient = socket(AF_INET,SOCK_STREAM,0);
+
+	SOCKADDR_IN addrSrv;
+	addrSrv.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+	addrSrv.sin_family = AF_INET;
+	addrSrv.sin_port = htons(6000);
+	
+	connect(sockClient,(SOCKADDR*)&addrSrv,sizeof(SOCKADDR));
+
+	char recvBuf[100];
+	recv(sockClient,recvBuf,100,0);
+	printf("%s\n",recvBuf);
+	char sendBuf[]="This is a client";
+	send(sockClient,sendBuf,strlen(sendBuf)+1,0);
+
+	closesocket(sockClient);
+	WSACleanup();
+}
+
+（23）打开解决方案视图，右键点击TCPXXXClient，在弹出的菜单中，选择属性；
+（24）在弹出的对话框中，点击配置属性，展开Linker，点击Input；
+（25）在右侧中，点击Additional Dependencies一项，然后在kernel32.lib的前面输入“ws2_32.lib;”；
+（26）同样，点击Configuration，选择Release，用同样的方式添加“ws2_32.lib;”；
+
+（27）按F7 build工程；不应该有任何错误；
+
+（28）打开解决方案视图，鼠标右键点击TCPXXXSrv，选择Set as StartUp Project，然后按Ctrl+F5运行TCPXXXSrv.exe程序；
+
+（29）同样，鼠标右键点击TCPXXXClient，选择Set as StartUp Project，然后按Ctrl+F5运行TCPXXXClient.exe程序；
+
+（30）第1个窗口和第2个窗口都应该有字符串显示。

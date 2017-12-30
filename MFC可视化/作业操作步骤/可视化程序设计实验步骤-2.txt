@@ -1,0 +1,122 @@
+（五）菜单实验：
+（1）打开资源视图；
+（2）双击Menu-IDR_MAINFRAME菜单；
+（3）在Test Message菜单的右侧，点击空白菜单，输入&Color，回车；
+（4）在其下方，输入&Red，移到下一行输入&Green，移到下一行输入&Blue；
+（5）鼠标右键点击Red项，选择Add Event Handler（添加事件处理）；
+（6）在弹出的对话框中，选择Class list-CHelloWorldView，选择Message type-COMMAND，点击Add and Edit（添加并编辑）按钮；
+（7）重新回到菜单编辑处，鼠标右键点击Red项，选择Add Event Handler（添加事件处理）；
+（8）在弹出的对话框中，选择Class list-CHelloWorldView，选择Message type-UPDATE_COMMAND_UI，点击Add and Edit（添加并编辑）按钮；
+(9)按同样的方法为Green项、Blue项分别添加COMMAND、UPDATE_COMMAND_UI这2个消息处理函数；
+
+（10）打开HelloWorldView.h文件，在类CHelloWorldView中，找到public：，输入：
+	BOOL m_bRed;
+	BOOL m_bGreen;
+	BOOL m_bBlue;
+
+（11）打开类视图，点击CHelloWorldView，在下方双击CHelloWorldView()构造函数，编辑该函数体，输入：
+CHelloWorldView::CHelloWorldView()
+{
+	// TODO: add construction code here
+	m_bRed = FALSE;
+	m_bGreen = FALSE;
+	m_bBlue = FALSE;
+}
+
+（12）在该文件中，编辑OnDraw函数，输入：
+void CHelloWorldView::OnDraw(CDC* pDC)
+{
+	CHelloWorldDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc)
+		return;
+
+	// TODO: add draw code for native data here
+	COLORREF color=RGB(m_bRed?255:0,
+					   m_bGreen?255:0,
+					   m_bBlue?255:0);
+	pDC->SetTextColor(color);
+	pDC->TextOut(0,0,_T("Hello World!"));
+}
+
+（13）在该文件中，找到OnColorRed函数，输入：
+void CHelloWorldView::OnColorRed()
+{
+	// TODO: Add your command handler code here
+	m_bRed=!m_bRed;
+	Invalidate();
+}
+
+（14）找到OnColorGreen函数，输入：
+void CHelloWorldView::OnColorGreen()
+{
+	// TODO: Add your command handler code here
+	m_bGreen=!m_bGreen;
+	Invalidate();
+}
+
+（15）找到OnColorBlue函数，输入：
+void CHelloWorldView::OnColorBlue()
+{
+	// TODO: Add your command handler code here
+	m_bBlue=!m_bBlue;
+	Invalidate();
+}
+
+（16）找到OnUpdateColorRed函数，输入：
+void CHelloWorldView::OnUpdateColorRed(CCmdUI *pCmdUI)
+{
+	// TODO: Add your command update UI handler code here
+	pCmdUI->SetCheck(m_bRed);
+}
+
+（17）找到OnUpdateColorGreen函数，输入：
+void CHelloWorldView::OnUpdateColorGreen(CCmdUI *pCmdUI)
+{
+	// TODO: Add your command update UI handler code here
+	pCmdUI->SetCheck(m_bGreen);
+}
+
+（18）找到OnUpdateColorBlue函数，输入：
+void CHelloWorldView::OnUpdateColorBlue(CCmdUI *pCmdUI)
+{
+	// TODO: Add your command update UI handler code here
+	pCmdUI->SetCheck(m_bBlue);
+}
+
+（19）按F7 build工程，按Ctrl-F5运行程序；
+（20）运行之后，就可以通过Red、Green、Blue菜单来选择文本颜色了；
+
+（21）打开资源视图；
+（22）右键点击HelloWorld-HelloWorld.rc，选择“Add Resource”；
+（23）在弹出的对话框中选择Bitmap，然后点击New按钮；
+（24）在资源视图中，展开Bitmap，点击IDB_BITMAP1，在属性窗口中，修改ID为IDB_RED1；
+（25）在资源视图中，双击IDB_BITMAP1，在属性窗口中，修改Height和Width均为13；
+（26）在资源视图中，右键点击IDB_RED1，复制并粘贴为第2个Bitmap为IDB_RED2，注意修改Height和Width为13；
+（27）用铅笔工具将IDB_RED1全部涂满红色，保持IDB_RED2不变；
+（28）用同样的方式创建IDB_GREEN1和IDB_GREEN2、IDB_BLUE1和IDB_BLUE2；
+（29）打开类视图；
+（30）在上方双击CMainFrame类，打开MainFrm.h文件；
+（31）找到CProgressCtrl m_ctrlProgress一行；
+（32）在下一行添加：
+	CBitmap m_bitmapRed1;
+	CBitmap m_bitmapRed2;
+	CBitmap m_bitmapGreen1;
+	CBitmap m_bitmapGreen2;
+	CBitmap m_bitmapBlue1;
+	CBitmap m_bitmapBlue2;
+
+（33）双击OnCreate函数，在该函数的末尾，语句return 0之前，输入：
+	m_bitmapRed1.LoadBitmap(IDB_RED1);
+	m_bitmapRed2.LoadBitmap(IDB_RED2);
+	m_bitmapGreen1.LoadBitmap(IDB_GREEN1);
+	m_bitmapGreen2.LoadBitmap(IDB_GREEN2);
+	m_bitmapBlue1.LoadBitmap(IDB_BLUE1);
+	m_bitmapBlue2.LoadBitmap(IDB_BLUE2);
+
+	GetMenu()->GetSubMenu(5)->SetMenuItemBitmaps(0,MF_BYPOSITION,&m_bitmapRed2,&m_bitmapRed1);
+	GetMenu()->GetSubMenu(5)->SetMenuItemBitmaps(1,MF_BYPOSITION,&m_bitmapGreen2,&m_bitmapGreen1);
+	GetMenu()->GetSubMenu(5)->SetMenuItemBitmaps(2,MF_BYPOSITION,&m_bitmapBlue2,&m_bitmapBlue1);
+
+（34）按F7 build工程，按Ctrl-F5运行程序；
+（35）可以看到，点击Red、Green、Blue菜单后，菜单左侧有图标了；

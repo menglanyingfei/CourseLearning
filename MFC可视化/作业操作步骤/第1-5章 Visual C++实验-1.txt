@@ -1,0 +1,232 @@
+项目：HelloWorld
+
+（一）使用VS 2010的AppWizard新建一个SDI工程实验：
+（1）打开VS2010；
+（2）点击File-New-Project-VisualC++-MFC-MFC Application，
+在对话框的Name一栏中输入工程名称HelloWorld；
+（3）点击确定；
+（4）在弹出的对话框中，点击Next，
+点击Application type-Single document，
+点击Project style-MFC standard；点击Visual style and colors-Windows Native/Default；
+（5）点击Next，点击Next，点击Next，点击Next；
+（6）点击Command bars（menu/toolbar/ribbon)-Use a classic menu，
+并且选中Use a classic docking toolbar；
+（7）点击Next，点击Next，点击Finish；
+（8）按F7，build工程；
+（9）按Ctrl-F5，运行工程；
+（10）你将看到一个标准的VC SDI窗口界面；
+
+（二）客户区显示“Hello World！”实验：
+（1）打开HelloWorld工程；
+（2）点击Class View（类视图）；
+（3）在类视图的上方，点击HelloWorld，展开类，点击CHelloWorldView，此时，在类视图的下方将会显示CHelloWorldView的成员变量和成员函数；
+（4）双击OnDraw(CDC *pDC)函数，在编辑区准备编辑该函数；
+（5）修改OnDraw函数如下：
+void CHelloWorldView::OnDraw(CDC* pDC)
+{
+	CHelloWorldDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc)
+		return;
+
+	// TODO: add draw code for native data here
+	pDC->TextOut(0,0,_T("Hello World!"));
+}
+
+（6）按F7 build工程，按Ctrl-F5运行工程；
+（7）程序运行后，将在客户区显示“Hello World！”信息；
+
+（三）用户自定义消息实验：
+（1）打开HelloWorld工程；
+（2）点击Solution Explorer（解决方案视图）；
+（3）在该视图的上方，点击HelloWorld-Header Files，找到stdafx.h文件，双击打开；
+（4）在文件的末尾加上：
+#define WM_HIDE WM_USER+101
+
+（5）点击类视图，在上方双击CHelloWorldView类，打开该类的头文件；
+（6）找到DECLARE_MESSAGE_MAP()一行；
+（7）在该行的上方，添加：
+	afx_msg LRESULT OnHide(WPARAM wParam,LPARAM lParam);
+
+（8）打开HelloWorldView.cpp文件（类CHelloWorldView的实现部分）；
+（9）在该文件的最开始处，找到：
+BEGIN_MESSAGE_MAP(CHelloWorldView, CView)
+...
+END_MESSAGE_MAP()
+
+（10）在END_MESSAGE_MAP()的上一行添加：
+	ON_MESSAGE(WM_HIDE,OnHide)
+
+（11）在该文件的末尾处，添加函数OnHide的实现：
+LRESULT CHelloWorldView::OnHide(WPARAM wParam,LPARAM lParam)
+{
+	MessageBox(_T("Hide"));
+
+	return 0;
+}
+
+（12）点击Resource View（资源视图）；
+（13）在该视图上方，点击HelloWorld-HelloWorld.rc-Menu；
+（14）双击打开IDR_MAINFRAME菜单；
+（15）在该菜单的最右边（Help的右边）单击鼠标，输入：&Test Message；
+（16）在Test Message菜单的下面，输入：&Send Message；
+（17）鼠标右键点击Send Message；
+（18）在弹出的菜单中选择“Add Event Handler”（添加事件处理函数）；
+（19）在弹出的对话框中，点击Class list-CHelloWorldView，其它参数保持不变，点击“Add and Edit”（添加并编辑）；
+（20）此时，将开始编辑函数，将以下内容输入：
+void CHelloWorldView::OnTestmessageSendmessage()
+{
+	// TODO: Add your command handler code here
+	PostMessage(WM_HIDE,0,0);
+}
+
+（21）按F7 build工程，按Ctrl-F5运行程序；
+（22）点击Test Message-Send Message，将会弹出一个消息提示框，上面显示“Hide”，表明自定义消息成功；
+
+（四）工具栏和状态栏实验：
+（1）打开HelloWorld工程；
+（2）点击资源视图-HelloWorld-HelloWorld.rc-Toolbar，双击打开IDR_MAINFRAME工具栏，点击工具栏上？图标的右边空白图标，用铅笔工具绘制一个简单的图标；
+（3）在该图标的属性视图中，将ID修改为ID_TESTMESSAGE_SENDMESSAGE；
+（4）按F7 build工程，按Ctrl-F5运行程序；
+（5）点击该图标，将会弹出一个消息提示框，上面显示“Hide”，表明该工具栏图标已与菜单Test Message-Send Message关联；
+
+（6）打开CMainFrame类的实现文件：MainFrm.cpp；
+（7）在该文件的开始处找到如下内容：
+static UINT indicators[] =
+{
+	ID_SEPARATOR,           // status line indicator
+	ID_INDICATOR_CAPS,
+	ID_INDICATOR_NUM,
+	ID_INDICATOR_SCRL,
+};
+
+将其修改为：
+static UINT indicators[] =
+{
+	ID_SEPARATOR,           // status line indicator
+	ID_SEPARATOR, // Mouse point
+	ID_INDICATOR_CAPS,
+	ID_INDICATOR_NUM,
+	ID_INDICATOR_SCRL,
+};
+
+（8）打开类视图，鼠标右键点击CHelloWorldView，选择Class Wizard；
+（9）在弹出的对话框中，点击Messages-Messages-WM_MOUSEMOVE，双击WM_MOUSEMOVE，点击Edit Code按钮；
+（10）编辑OnMouseMove函数，输入：
+void CHelloWorldView::OnMouseMove(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	CString str;
+	CStatusBar* pStatus;
+
+	str.Format(_T("X=%d,Y=%d"),point.x,point.y);
+	pStatus=(CStatusBar*)(AfxGetApp()->m_pMainWnd->GetDescendantWindow(AFX_IDW_STATUS_BAR));
+	pStatus->SetPaneText(1,str);
+
+
+	CView::OnMouseMove(nFlags, point);
+}
+
+（11）按F7 build工程，按Ctrl-F5运行程序；
+（12）运行后，在程序窗口的下方，将会显示当前鼠标的位置信息；
+
+（13）打开CMainFrame类的实现文件：MainFrm.cpp；
+（14）在该文件的开始处找到以下内容：
+static UINT indicators[] =
+{
+	ID_SEPARATOR,           // status line indicator
+	ID_SEPARATOR, // Mouse point
+	ID_INDICATOR_CAPS,
+	ID_INDICATOR_NUM,
+	ID_INDICATOR_SCRL,
+};
+
+替换为：
+static UINT indicators[] =
+{
+	ID_SEPARATOR,           // status line indicator
+	ID_SEPARATOR, // Mouse point
+	ID_INDICATOR_TIME, // Time
+	ID_INDICATOR_CAPS,
+	ID_INDICATOR_NUM,
+	ID_INDICATOR_SCRL,
+};
+
+（15）打开资源视图，点击展开String Table，在右边将出现字符串编辑界面；
+（16）在该编辑界面的最下边处，鼠标点击，将IDS_STRING101修改为ID_INDICATOR_TIME，在数值101的右边一项中，输入Show time，回车；
+（16）打开类视图，点击CMainFrame类，在下方双击OnCreate函数，编辑OnCreate函数；
+（17）在该函数的末尾处，return 0语句之前，输入：
+	SetTimer(1,1000,NULL);
+	CTime time=CTime::GetCurrentTime();
+	CString str=time.Format(_T("%H:%M:%S"));
+	CClientDC dc(this);
+	CSize sz=dc.GetTextExtent(str);
+	m_wndStatusBar.SetPaneInfo(2,ID_INDICATOR_TIME,SBPS_POPOUT,sz.cx);
+	m_wndStatusBar.SetPaneText(2,str);
+
+（18）在类视图中，右键点击CMainFrame类，选择“Class Wizard”（类向导）；
+（19）在弹出的对话框中，点击Messages-Messages-WM_TIMER，双击WM_TIMER，点击Edit Code；
+（20）编辑OnTimer函数，输入：
+void CMainFrame::OnTimer(UINT_PTR nIDEvent)
+{
+	// TODO: Add your message handler code here and/or call default
+	CTime time=CTime::GetCurrentTime();
+	CString str=time.Format(_T("%H:%M:%S"));
+	m_wndStatusBar.SetPaneText(2,str);
+
+	CFrameWnd::OnTimer(nIDEvent);
+}
+
+（21）按F7 build工程，按Ctrl-F5运行程序；
+（22）在程序运行的窗口下方，将显示时钟；
+
+（23）打开CMainFrame类的实现文件：MainFrm.cpp；
+（24）在该文件的开始处找到以下内容：
+static UINT indicators[] =
+{
+	ID_SEPARATOR,           // status line indicator
+	ID_SEPARATOR, // Mouse point
+	ID_INDICATOR_TIME, // Time
+	ID_INDICATOR_CAPS,
+	ID_INDICATOR_NUM,
+	ID_INDICATOR_SCRL,
+};
+替换为：
+static UINT indicators[] =
+{
+	ID_SEPARATOR,           // status line indicator
+	ID_SEPARATOR, // Mouse point
+	ID_INDICATOR_TIME, // Time
+	ID_INDICATOR_PROGRESS, // Progress
+	ID_INDICATOR_CAPS,
+	ID_INDICATOR_NUM,
+	ID_INDICATOR_SCRL,
+};
+
+（25）打开资源视图，点击展开String Table，在右边将出现字符串编辑界面；
+（26）在该编辑界面的最下边处，鼠标点击，将IDS_STRING102修改为ID_INDICATOR_PROGRESS，在数值102的右边一项中，输入Progress，回车；
+（27）打开MainFrm.h文件，找到CStatusBar        m_wndStatusBar一行，在其下方增加：
+	CProgressCtrl m_ctrlProgress;
+
+（28）打开类视图，右键点击CMainFrame，选择Class Wizard（类视图）；
+（29）在弹出的对话框中，点击Messages-Messages-WM_PAINT，双击WM_PAINT，点击Edit Code，编辑函数OnPaint；
+（30）在函数OnPaint中，输入：
+void CMainFrame::OnPaint()
+{
+	CPaintDC dc(this); // device context for painting
+	// TODO: Add your message handler code here
+	// Do not call CFrameWnd::OnPaint() for painting messages
+
+	CRect rect;
+	m_wndStatusBar.GetItemRect(3,&rect);
+	if (m_ctrlProgress.m_hWnd)
+		m_ctrlProgress.SetWindowPos(NULL,rect.left,rect.top,rect.Width(),rect.Height(),SWP_NOZORDER);
+	else
+		m_ctrlProgress.Create(WS_CHILD|WS_VISIBLE,rect,&m_wndStatusBar,111);
+}
+
+（31）修改当前文件的OnTimer函数，在CFrameWnd::OnTimer(nIDEvent)一行前，输入：
+	m_ctrlProgress.StepIt();
+
+（32）按F7 build工程，按Ctrl-F5运行程序；
+（33）程序运行后，将在界面的右下方显示进度条；

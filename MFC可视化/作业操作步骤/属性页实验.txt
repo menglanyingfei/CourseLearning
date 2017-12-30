@@ -1,0 +1,325 @@
+（七）属性页实验：
+（1）打开HelloWorld工程；
+（2）打开资源视图；
+（3）点击Menu-IDR_MAINFRAME菜单；
+（4）在Sum菜单右侧，添加&Property Page；
+（5）在Property Page菜单下一行，添加&Test Property Page；
+（6）为&Test Property Page添加事件处理程序：右键点击，弹出菜单，选择Add Event Handler（添加事件处理）；
+（7）在弹出的对话框中，点击Class list-CHelloWorldView，其它保持不变，点击Add and Edit；
+（8）打开资源视图；
+（9）展开HelloWorld-HelloWorld.rc-Dialog；
+（10）复制IDD_SELECTCOLOR，改名为IDD_PAGE1；
+（11）删除IDD_PAGE1对话框上的OK和Cancel按钮；
+（12）在属性窗口中，修改Style=Child、Border=Thin、Title Bar=True、Disable=True；
+（13）双击IDD_PAGE1对话框的标题栏；
+（14）在弹出的对话框中，输入Class name=CMySelectColorPage，选择Base class为CPropertyPage，点击Finish；
+（15）复制IDD_SUM，生成IDD_PAGE2；
+（16）删除IDD_PAGE2对话框上的OK按钮，并将“相加”按钮上移；
+（17）按步骤（12）修改IDD_PAGE2的属性；
+（18）双击IDD_PAGE2对话框的标题栏；
+（19）在弹出的对话框中，输入Class name=CMySumPage，选择Base class为CPropertyPage，点击Finish；
+
+（20）打开对话框IDD_PAGE1：为IDC_RED、IDC_GREEN、IDC_BLUE三个控件分别建立对应的内存变量（都是BOOL类型）——m_bRed、m_bGreen、m_bBlue（方法在前面已经介绍了）；
+（21）打开对话框IDD_PAGE2：为IDC_ADD1、IDC_ADD2、IDC_SUM三个控件分别建立对应的内存变量（都是int类型）——m_nAdd1、m_nAdd2、m_nSum（方法在前面已经介绍了）；
+(22)为对话框IDD_PAGE2中的“相加”按钮添加事件处理：在该对话框的“相加”按钮上，右键点击，选择Class Wizard，在弹出的对话框上点击Commands-IDC_ADD，双击IDC_ADD，点击确定，再次点击确定退出对话框；
+（23）找到HelloWorldView.cpp中的函数OnPropertypageTestpropertypage（）；
+（24）回到该文件的最开始处，在#include "HelloWorldView.h"一行之后，输入：
+#include "MySelectColorPage.h"
+#include "MySumPage.h"
+
+（25）再次回到OnPropertypageTestpropertypage（）函数，输入：
+void CHelloWorldView::OnPropertypageTestpropertypage()
+{
+	// TODO: Add your command handler code here
+	CPropertySheet propSheet;
+	CMySelectColorPage page1;
+	CMySumPage page2;
+
+	propSheet.AddPage(&page1);
+	propSheet.AddPage(&page2);
+
+	if (propSheet.DoModal()==IDOK) {
+		this->m_bRed = page1.m_bRed;
+		this->m_bGreen = page1.m_bGreen;
+		this->m_bBlue = page1.m_bBlue;
+
+		Invalidate();
+	}
+}
+
+（26）打开类视图，点击CMySumPage类；
+（27）在视图下方双击OnClickedAdd()函数，输入：
+void CMySumPage::OnClickedAdd()
+{
+	// TODO: Add your control notification handler code here
+	UpdateData(TRUE);
+
+	m_nSum=m_nAdd1+m_nAdd2;
+
+	UpdateData(FALSE);
+}
+
+（28）打开类视图，右键点击CMySelectColorPage类，选择“Class Wizard”；
+（29）在弹出的对话框中，点击Commands-IDC_RED，双击IDC_RED，在弹出的对话框中，选择OK；
+（30）同样的方式，分别双击IDC_GREEN和IDC_BLUE，都选择OK；
+（31）不退出Class Wizard对话框，点击Virtual Functions-OnApply，双击OnApply，点击确定退出；
+（32）在MySelectColorPage.cpp中找到函数OnClickedRed()，输入：
+void CMySelectColorPage::OnClickedRed()
+{
+	// TODO: Add your control notification handler code here
+	SetModified(TRUE);
+}
+
+（33）同样的方式，找到OnClickedGreen和OnClickedBlue函数，输入：
+void CMySelectColorPage::OnClickedGreen()
+{
+	// TODO: Add your control notification handler code here
+	SetModified(TRUE);
+}
+
+
+void CMySelectColorPage::OnClickedBlue()
+{
+	// TODO: Add your control notification handler code here
+	SetModified(TRUE);
+}
+
+（34）在文件MySelectColorPage.cpp的最开始处，找到#include "HelloWorld.h"一行，在下一行输入：
+#include "MainFrm.h"
+#include "HelloWorldDoc.h"
+#include "HelloWorldView.h"
+
+（35）在该文件的最下面找到OnApply函数，输入：
+BOOL CMySelectColorPage::OnApply()
+{
+	// TODO: Add your specialized code here and/or call the base class
+	UpdateData(TRUE);
+	((CHelloWorldView*)(((CMainFrame*)AfxGetMainWnd())->GetActiveView()))->m_bRed = this->m_bRed;
+	((CHelloWorldView*)(((CMainFrame*)AfxGetMainWnd())->GetActiveView()))->m_bGreen = this->m_bGreen;
+	((CHelloWorldView*)(((CMainFrame*)AfxGetMainWnd())->GetActiveView()))->m_bBlue = this->m_bBlue;
+
+	::InvalidateRect(((CMainFrame*)AfxGetMainWnd())->GetSafeHwnd(),NULL,NULL);
+
+	return CPropertyPage::OnApply();
+}
+
+（八）对话框控件实验一：
+（1）打开HelloWorld工程；
+（2）打开资源视图；
+（3）展开HelloWorld-HelloWorld.rc-Dialog；
+（4）修改IDD_PAGE1的Caption为“选择颜色”；
+（5）修改IDD_PAGE2的Caption为“两数相加”；
+（6）修改IDD_SELECTOR的Caption为“选择颜色”；
+（7）修改IDD_SUM的Caption为“两数相加”；
+（8）按F7 build工程，按Ctrl-F5运行程序；
+（9）在资源视图中，右键点击Dialog，选择“Insert Dialog”，单击IDD_DIALOG1，将ID号改名为IDD_PAGE3；
+（10）按教材P165的图4.26设计对话框，注意，要去掉IDD_PAGE3上的OK和Cancel按钮，细节如下；
+（11）从Toolbox中拖入一个Static Text，Caption改为“姓名”，拖入一个Static Text，Caption改为“性别”，拖入一个Static Text，Caption改为“年龄”，
+（12）在“姓名”的右边拖入一个Edit Control，ID改为IDC_EDIT_NAME；
+（13）在“年龄”的右边拖入一个Edit Control，ID改为IDC_EDIT_AGE;
+（14）在“性别”的右边拖入一个Combo Box，ID改为IDC_COMBO_GENDER，修改属性Data为“男;女”，Type为Drop List；
+（15）设置好布局和Tab Order；
+（16）修改IDD_PAGE3的Caption为“个人信息”；
+（17）在属性窗口中，修改Style=Child、Border=Thin、Title Bar=True、Disable=True；
+（18）双击IDD_PAGE3的标题栏，新建一个CPersonalInfoPage类，基类设置为CPropertyPage；
+（19）打开类视图，右键点击CPersonalInfoPage，选择“类向导”；
+（20）在弹出的对话框中，点击Member Variabes，为IDC_COMBO_GENDER添加CString类型的m_strGender变量，为IDC_EDIT_AGE添加CString类型的m_strAge变量，为IDC_EDIT_NAME添加CString类型的m_strName变量；
+
+（21）打开资源视图，插入一个对话框，ID改为IDD_PAGE4；
+（22）修改IDD_PAGE4的属性：Caption=兴趣爱好,Style=Child、Border=Thin、Title Bar=True、Disable=True；
+（23）删除掉OK和Cancel按钮；
+
+（24）按教材P166图4.28设计对话框：从工具箱中拖入四个Check Box，Caption分别为乒乓球、篮球、游泳、网球；ID分别为IDC_CHK_TBLTENNIS、IDC_CHK_BSKBALL、IDC_CHK_SWIMMING、IDC_CHK_TENNIS；
+（25）排好布局和Tab Order；
+
+（26）双击IDD_PAGE4，新建一个类CInterestPage，基类设为CPropertyPage；
+（27）打开类CInterestPage的类向导，为它添加控件对应的内存变量：内存变量都是BOOL类型，IDC_CHK_BSKBALL对应m_bBSKBall，IDC_CHK_SWIMMING对应m_bSwimming，IDC_CHK_TBLTENNIS对应m_bTBLTennis，IDC_CHK_TENNIS对应m_bTennis；
+
+（28）打开资源视图，插入一个对话框，改ID为IDD_PAGE5；
+（29）删除OK和Cancel按钮；
+（30）修改属性：Caption=工作情况，Style=Child、Border=Thin、Title Bar=True、Disable=True；
+（31）按教材P166图4.29设计对话框：拖入三个Radio Button，ID分别为IDC_RADIO_PRO、IDC_RADIO_SOFT、IDC_RADIO_ANALY，Caption分别为程序员、软件工程师、系统分析师；将IDC_RADIO_PRO的属性Group设为True；
+（32）拖入一个Group Box，将这三个Radio Button包括在内，修改Caption为“职务”；
+（33）点击菜单Format-Tab Order，确保三个Radio Button的序号是连续的，如果不连续，需要使用Tab Order操作进行调整；
+
+（34）拖入一个List Box，ID改为IDC_LIST_CITY；
+（35）拖入一个Group Box，将IDC_LIST_CITY包括在内，修改Caption为“工作地点”；
+（36）排好布局；
+（37）双击IDD_PAGE5，新建一个类CJobPage，基类选择CPropertyPage；
+（38）为类CJobPage关联控件与内存变量：IDC_LIST_CITY关联CString的变量m_strCity，IDC_RADIO_PRO关联int类型的变量m_nJob；
+
+（39）打开CHelloWorldView.cpp；
+（40）在文件的最开始处，#include "MySumPage.h"的下一行，输入：
+#include "PersonalInfoPage.h"
+#include "InterestPage.h"
+#include "JobPage.h"
+
+（41）找到OnPropertypageTestpropertypage函数，输入：
+void CHelloWorldView::OnPropertypageTestpropertypage()
+{
+	// TODO: Add your command handler code here
+	CPropertySheet propSheet;
+	CMySelectColorPage page1;
+	CMySumPage page2;
+	CPersonalInfoPage page3;
+	CInterestPage page4;
+	CJobPage page5;
+
+	propSheet.AddPage(&page1);
+	propSheet.AddPage(&page2);
+	propSheet.AddPage(&page3);
+	propSheet.AddPage(&page4);
+	propSheet.AddPage(&page5);
+
+	if (propSheet.DoModal()==IDOK) {
+		this->m_bRed = page1.m_bRed;
+		this->m_bGreen = page1.m_bGreen;
+		this->m_bBlue = page1.m_bBlue;
+
+		Invalidate();
+	}
+}
+
+（42）按F7 build工程，按Ctrl-F5运行程序，此时，不应该有任何错误；
+
+（43）打开类视图，右键点击CPersonalInfoPage，选择类向导；
+（44）点击Virtual Function-OnInitDialog，双击OnInitDialog，点击Edit Code；
+（45）在OnInitDialog函数处，输入：
+BOOL CPersonalInfoPage::OnInitDialog()
+{
+	CPropertyPage::OnInitDialog();
+
+	// TODO:  Add extra initialization here
+	((CComboBox*)GetDlgItem(IDC_COMBO_GENDER))->SetCurSel(0);
+
+	return TRUE;  // return TRUE unless you set the focus to a control
+	// EXCEPTION: OCX Property Pages should return FALSE
+}
+
+（46）打开类视图，右键点击CJobPage，选择类向导；
+（47）点击Virtual Function-OnInitDialog，双击OnInitDialog，点击Edit Code；
+（48）在OnInitDialog函数处，输入：
+BOOL CJobPage::OnInitDialog()
+{
+	CPropertyPage::OnInitDialog();
+
+	// TODO:  Add extra initialization here
+	((CListBox*)GetDlgItem(IDC_LIST_CITY))->AddString(_T("北京"));
+	((CListBox*)GetDlgItem(IDC_LIST_CITY))->AddString(_T("上海"));
+	((CListBox*)GetDlgItem(IDC_LIST_CITY))->AddString(_T("深圳"));
+	((CListBox*)GetDlgItem(IDC_LIST_CITY))->AddString(_T("天津"));
+
+	((CListBox*)GetDlgItem(IDC_LIST_CITY))->SetCurSel(0);
+	
+	((CButton*)GetDlgItem(IDC_RADIO_PRO))->SetCheck(TRUE);
+
+	return TRUE;  // return TRUE unless you set the focus to a control
+	// EXCEPTION: OCX Property Pages should return FALSE
+}
+
+（49）按F7 build工程，按Ctrl-F5运行程序；
+
+（50）打开CHelloWorldView.h，在CMySumDlg m_dlgSum的下一行，输入：
+	CString m_strName;
+	CString m_strGender;
+	CString m_strAge;
+	CString m_strInterest;
+	CString m_strJob;
+	CString m_strCity;
+
+（51）打开CHelloWorldView的构造函数，输入：
+CHelloWorldView::CHelloWorldView()
+{
+	// TODO: add construction code here
+	m_bRed = FALSE;
+	m_bGreen = FALSE;
+	m_bBlue = FALSE;
+
+	m_strName = _T("李军");
+	m_strGender = _T("男");
+	m_strAge = _T("30");
+	
+	m_strInterest = _T("");
+	m_strJob = _T("程序员");
+	m_strCity = _T("北京");
+}
+
+（52）找到OnDraw，输入：
+void CHelloWorldView::OnDraw(CDC* pDC)
+{
+	CHelloWorldDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc)
+		return;
+
+	// TODO: add draw code for native data here
+	COLORREF color=RGB(m_bRed?255:0,
+					   m_bGreen?255:0,
+					   m_bBlue?255:0);
+	pDC->SetTextColor(color);
+	pDC->TextOut(0,0,_T("Hello World!"));
+
+	TEXTMETRIC tm;
+	pDC->GetTextMetrics(&tm);
+	pDC->TextOut(0,1*tm.tmHeight,_T("姓名：")+m_strName);
+	pDC->TextOut(0,2*tm.tmHeight,_T("性别：")+m_strGender);
+	pDC->TextOut(0,3*tm.tmHeight,_T("年龄：")+m_strAge);
+	pDC->TextOut(0,4*tm.tmHeight,_T("兴趣爱好：")+m_strInterest);
+	pDC->TextOut(0,5*tm.tmHeight,_T("工作：")+m_strJob);
+	pDC->TextOut(0,6*tm.tmHeight,_T("工作地点：")+m_strCity);
+}
+
+(53)打开HelloWorldView.cpp文件，找到OnPropertypageTestpropertypage函数，输入：
+void CHelloWorldView::OnPropertypageTestpropertypage()
+{
+	// TODO: Add your command handler code here
+	CPropertySheet propSheet;
+	CMySelectColorPage page1;
+	CMySumPage page2;
+	CPersonalInfoPage page3;
+	CInterestPage page4;
+	CJobPage page5;
+
+	page4.m_bTBLTennis = FALSE;
+	page4.m_bBSKBall = FALSE;
+	page4.m_bSwimming = FALSE;
+	page4.m_bTennis = FALSE;
+
+	propSheet.AddPage(&page1);
+	propSheet.AddPage(&page2);
+	propSheet.AddPage(&page3);
+	propSheet.AddPage(&page4);
+	propSheet.AddPage(&page5);
+
+	if (propSheet.DoModal()==IDOK) {
+		this->m_bRed = page1.m_bRed;
+		this->m_bGreen = page1.m_bGreen;
+		this->m_bBlue = page1.m_bBlue;
+
+		this->m_strName = page3.m_strName;
+		this->m_strGender = page3.m_strGender;
+		this->m_strAge = page3.m_strAge;
+
+		m_strInterest = _T("");
+		if (page4.m_bTBLTennis)
+			m_strInterest += _T(" 乒乓球 ");
+		if (page4.m_bBSKBall)
+			m_strInterest += _T(" 篮球 ");
+		if (page4.m_bSwimming)
+			m_strInterest += _T(" 游泳 ");
+		if (page4.m_bTennis)
+			m_strInterest += _T(" 网球 ");
+
+		if (page5.m_nJob==0)
+			m_strJob = _T("程序员");
+		if (page5.m_nJob==1)
+			m_strJob = _T("软件工程师");
+		if (page5.m_nJob==2)
+			m_strJob = _T("系统分析师");
+
+		this->m_strCity = page5.m_strCity;
+
+		Invalidate();
+	}
+}
+（54）按F7 build工程，按Ctrl-F5运行程序；

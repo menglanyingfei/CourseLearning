@@ -1,0 +1,411 @@
+MyDrawLine工程——用鼠标画线并保存到文件中。
+
+（1）打开VS2010；
+（2）点击File-New-Project-VisualC++-MFC-MFC Application，在对话框的Name一栏中输入工程名称MyDrawLine；
+（3）点击确定；
+（4）在弹出的对话框中，点击Next，点击Application type-Single document，点击Project style-MFC standard；点击Visual style and colors-Windows Native/Default；
+（5）点击Next，点击Next，点击Next，点击Next；
+（6）点击Command bars（menu/toolbar/ribbon)-Use a classic menu，并且选中Use a classic docking toolbar；
+（7）点击Next，点击Next，点击Finish；
+（8）按F7，build工程；
+（9）按Ctrl-F5，运行工程；
+（10）你将看到一个标准的VC SDI窗口界面；
+
+（11）打开类视图，双击CMyDrawLineView类，打开MyDrawLineView.h文件；
+（12）找到“protected:”一行，在下一行输入：
+	BOOL m_bDraw;
+	HCURSOR m_hCursor;
+	CPoint m_pointCur;
+	CPoint m_pointOrigin;
+
+（13）在类视图的下方，双击构造函数CMyDrawLineView，编辑它：
+CMyDrawLineView::CMyDrawLineView()
+{
+	// TODO: add construction code here
+	m_bDraw = FALSE;
+	m_hCursor = AfxGetApp()->LoadStandardCursor(IDC_CROSS);
+}
+
+（14）在类视图中，鼠标右键点击CMyDrawLineView类，选择“类向导”；
+（15）在弹出的对话框中点击Message-WM_MOUSEMOVE，双击它，将生成一个消息响应函数OnMouseMove；
+（16）继续点击Message-WM_LBUTTONUP，双击它，将生成一个消息响应函数OnLButtonUp；
+继续点击Message-WM_LBUTTONDOWN，双击它，将生成一个消息响应函数OnLButtonDown；
+（17）点击确定退出对话框；
+
+（18）在类视图中，点击CMyDrawLineView，在下面窗口中双击函数PreCreateWindow，输入：
+BOOL CMyDrawLineView::PreCreateWindow(CREATESTRUCT& cs)
+{
+	// TODO: Modify the Window class or styles here by modifying
+	//  the CREATESTRUCT cs
+	cs.lpszClass = AfxRegisterWndClass(CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW,
+										m_hCursor,
+										(HBRUSH)::GetStockObject(BLACK_BRUSH));
+
+	return CView::PreCreateWindow(cs);
+}
+
+（19）在类视图中，点击CMyDrawLineView类，在下面的窗口中双击函数OnLButtonDown函数，输入：
+void CMyDrawLineView::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	m_pointOrigin = point;
+	m_pointCur = point;
+
+	SetCapture();
+	m_bDraw = TRUE;
+
+	RECT rect;
+	GetClientRect(&rect);
+	ClientToScreen(&rect);
+	ClipCursor(&rect);
+
+	CView::OnLButtonDown(nFlags, point);
+}
+
+（20）在类视图中，点击CMyDrawLineView类，在下面的窗口中双击函数OnLButtonUp函数，输入：
+void CMyDrawLineView::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	if (m_bDraw) {
+		m_bDraw = FALSE;
+		ReleaseCapture();
+		ClipCursor(NULL);
+	}
+
+	CView::OnLButtonUp(nFlags, point);
+}
+
+（21）在类视图中，点击CMyDrawLineView类，在下面的窗口中双击函数OnMouseMove函数，输入：
+void CMyDrawLineView::OnMouseMove(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	if (m_bDraw) {
+		CClientDC dc(this);
+		dc.SetROP2(R2_NOT);
+		dc.MoveTo(m_pointOrigin);
+		dc.LineTo(m_pointCur);
+		dc.MoveTo(m_pointOrigin);
+		dc.LineTo(point);
+		m_pointCur = point;
+	}
+
+	CView::OnMouseMove(nFlags, point);
+}
+
+（22）打开资源视图，展开MyDrawLine-MyDrawLine.rc-String Table，双击String Table [English]，将打开string表，找到IDR_MAINFRAME，修改它的Caption为“简单的画线处理程序”；
+（23）按F7 build工程，按Ctrl-F5运行程序；可以在客户区画线了。但是，程序还需完善：当改变窗口大小时，直线消失了。
+
+（24）打开类视图，右键点击最上方的MyDrawLine，选择Add-Class，在弹出的对话框中，点击Installed Templates-Visual C++-MFC，在对话框右边双击MFC Class，在弹出的对话框中：在Class Name中，输入CMyLine，在Base class中，选取CObject，点击完成，将生成一个新类CMyLine；
+
+（25）打开类视图，双击CMyLine类，将打开MyLine.h文件，用下面内容替换该类：
+class CMyLine : public CObject
+{
+public:
+	CMyLine();
+	CMyLine(CPoint pointStart,CPoint pointEnd);
+	virtual ~CMyLine();
+
+	void OnDraw(CDC *pDC);
+
+protected:
+	CPoint m_pointStart;
+	CPoint m_pointEnd;
+};
+
+（26）打开MyLine.cpp文件，输入：
+CMyLine::CMyLine(CPoint pointStart,CPoint pointEnd)
+{
+	m_pointStart = pointStart;
+	m_pointEnd = pointEnd;
+}
+
+输入：
+void CMyLine::OnDraw(CDC *pDC)
+{
+	pDC->MoveTo(m_pointStart);
+	pDC->LineTo(m_pointEnd);
+}
+
+（27）按F7 build工程，此时不应该有任何错误；
+
+（28）打开类视图，双击CMyDrawLineDoc类，将打开MyDrawLineDoc.h文件，找到“#pragma once”一行，在它的下一行，输入：
+#include "MyLine.h"
+
+（29）找到“protected:”一行，在它的下一行，输入：
+	CObArray m_arrayLines;
+
+（30）找到“public:”一行，在它的下一行，输入：
+	void AddLine(CPoint pointStart,CPoint pointEnd);
+	void OnDraw(CDC* pDC);
+
+（31）打开MyDrawLineDoc.cpp文件，在该文件的末尾，输入：
+void CMyDrawLineDoc::AddLine(CPoint pointStart,CPoint pointEnd)
+{
+	CMyLine* pMyLine = new CMyLine(pointStart,pointEnd);
+	m_arrayLines.Add(pMyLine);
+}
+
+void CMyDrawLineDoc::OnDraw(CDC* pDC)
+{
+	int i;
+
+	for (i=0;i<m_arrayLines.GetSize();i++) {
+		((CMyLine*)m_arrayLines.GetAt(i))->OnDraw(pDC);	
+	}
+}
+
+（32）打开类视图，右键点击CMyDrawLineDoc类，选择“类向导”，点击Virtual Functions-DeleteContents，双击它，将生成一个虚函数DeleteContents，编辑该函数，输入：
+void CMyDrawLineDoc::DeleteContents()
+{
+	// TODO: Add your specialized code here and/or call the base class
+	int index;
+
+	index = m_arrayLines.GetSize();
+
+	while (index)
+		delete m_arrayLines.GetAt(--index);
+
+	m_arrayLines.RemoveAll();
+
+	CDocument::DeleteContents();
+}
+
+（33）打开类视图，点击CMyDrawLineView类，在下方窗口，双击OnLButtonUp函数，用下面的内容替换原函数：
+void CMyDrawLineView::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	if (m_bDraw) {
+		m_bDraw = FALSE;
+		ReleaseCapture();
+		ClipCursor(NULL);
+
+		CMyDrawLineDoc* pDoc = GetDocument();
+		pDoc->AddLine(m_pointOrigin,point);
+	}
+
+	CView::OnLButtonUp(nFlags, point);
+}
+
+（34）在类视图的下方窗口，双击OnDraw函数，用下面的内容替换原函数：
+void CMyDrawLineView::OnDraw(CDC* pDC)
+{
+	CMyDrawLineDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc)
+		return;
+
+	// TODO: add draw code for native data here
+	pDC->SetROP2(R2_WHITE);
+	pDoc->OnDraw(pDC);
+}
+
+（35）按F7 build工程，按Ctrl-F5运行程序，发现，改变窗口大小，所绘制的直线也会得到保留。
+
+（36）打开资源视图，展开Menu-IDR_MAINFRAME，双击IDR_MAINFRAME，打开菜单；
+（37）在Edit-Undo菜单下，新增一菜单项：&Redo\tCtrl+Y；注意，将该菜单项的ID号，修改为ID_EDIT_REDO；
+打开资源视图，展开Accelerator-IDR_MAINFRAME，双击IDR_MAINFRAME，在右边窗口，右键单击，选择“添加加速键”，输入一项：
+ID_EDIT_REDO Ctrl Y VIRTKEY
+
+（38）右键点击Undo菜单项，选取“添加事件处理程序”，在弹出的对话框中，点击Class list-CMyDrawLineView，Message type-COMMAND，点击“添加并编辑”；
+（39）右键点击Undo菜单项，选取“添加事件处理程序”，在弹出的对话框中，点击Class list-CMyDrawLineView，Message type-UPDATE_COMMAND_UI，点击“添加并编辑”；
+
+（40）按步骤（38）（39）同样的方式为Redo菜单项添加对应的2个事件处理程序；
+
+（41）打开类视图，双击CMyDrawLineDoc，打开MyDrawLineDoc.h文件；
+（42）找到“CObArray m_arrayLines;”一行，在下一行输入：
+	CObArray m_array2Lines;
+
+（43）找到“void OnDraw(CDC* pDC);”一行，在下一行输入：
+	void OnUndo();
+	void OnRedo();
+	int GetArrayLinesSize();
+	int GetArray2LinesSize();
+	void ClearArrayLines();
+	void ClearArray2Lines();
+
+（44）打开MyDrawLineDoc.cpp文件，在文件的末尾，输入：
+void CMyDrawLineDoc::OnUndo()
+{
+	int index;
+
+	index = m_arrayLines.GetUpperBound();
+	if (index >= 0) {
+		m_array2Lines.Add(m_arrayLines.GetAt(index));
+		m_arrayLines.RemoveAt(index);
+		UpdateAllViews(NULL);
+	}
+}
+
+void CMyDrawLineDoc::OnRedo()
+{
+	int index;
+
+	index = m_array2Lines.GetUpperBound();
+	if (index >= 0) {
+		m_arrayLines.Add(m_array2Lines.GetAt(index));
+		m_array2Lines.RemoveAt(index);
+		UpdateAllViews(NULL);
+	}
+}
+
+int CMyDrawLineDoc::GetArrayLinesSize()
+{
+	return m_arrayLines.GetSize();
+}
+
+int CMyDrawLineDoc::GetArray2LinesSize()
+{
+	return m_array2Lines.GetSize();
+}
+
+void CMyDrawLineDoc::ClearArrayLines()
+{
+	int i;
+
+	for (i=0;i<m_arrayLines.GetSize();i++) {
+		delete m_arrayLines.GetAt(i);
+		m_arrayLines.RemoveAt(i);
+	}
+}
+
+void CMyDrawLineDoc::ClearArray2Lines()
+{
+	int i;
+
+	for (i=0;i<m_array2Lines.GetSize();i++) {
+		delete m_array2Lines.GetAt(i);
+		m_array2Lines.RemoveAt(i);
+	}
+}
+
+（45）找到CMyDrawLineDoc类的析构函数~CMyDrawLineDoc，输入：
+CMyDrawLineDoc::~CMyDrawLineDoc()
+{
+	ClearArrayLines();
+	ClearArray2Lines();
+}
+
+（46）打开类视图，点击CMyDrawLineView类，在类视图的下方窗口中，双击OnEditUndo函数，输入：
+void CMyDrawLineView::OnEditUndo()
+{
+	// TODO: Add your command handler code here
+	CMyDrawLineDoc* pDoc = GetDocument();
+	pDoc->OnUndo();
+}
+
+（47）同样，双击OnUpdateEditUndo函数，输入：
+void CMyDrawLineView::OnUpdateEditUndo(CCmdUI *pCmdUI)
+{
+	// TODO: Add your command update UI handler code here
+	CMyDrawLineDoc* pDoc = GetDocument();
+	pCmdUI->Enable(pDoc->GetArrayLinesSize());
+}
+
+（48）同样，双击OnEditRedo函数，输入：
+void CMyDrawLineView::OnEditRedo()
+{
+	// TODO: Add your command handler code here
+	CMyDrawLineDoc* pDoc = GetDocument();
+	pDoc->OnRedo();
+}
+
+（49）同样，双击OnUpdateEditRedo函数，输入：
+void CMyDrawLineView::OnUpdateEditRedo(CCmdUI *pCmdUI)
+{
+	// TODO: Add your command update UI handler code here
+	CMyDrawLineDoc* pDoc = GetDocument();
+	pCmdUI->Enable(pDoc->GetArray2LinesSize());
+}
+
+（50）同样，双击OnLButtonUp函数，用下面内容替换原函数：
+void CMyDrawLineView::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	if (m_bDraw) {
+		m_bDraw = FALSE;
+		ReleaseCapture();
+		ClipCursor(NULL);
+
+		CMyDrawLineDoc* pDoc = GetDocument();
+		pDoc->AddLine(m_pointOrigin,point);
+		pDoc->ClearArray2Lines();
+	}
+
+	CView::OnLButtonUp(nFlags, point);
+}
+
+（51）打开类视图，双击类CMyLine，在类声明的末尾“}；”的上一行，输入：
+	DECLARE_SERIAL(CMyLine)
+
+（52）双击CMyLine类的构造函数CMyLine，打开MyLine.cpp文件，在“CMyLine::CMyLine()”的上一行，添加：
+IMPLEMENT_SERIAL(CMyLine,CObject,1)
+
+（53）在类视图中，右键单击CMyLine类，选取“类向导”，在弹出的对话框中，点击Virtual Funcitions，双击Serialize，点击“编辑代码”；
+
+（54）输入：
+void CMyLine::Serialize(CArchive& ar)
+{
+	if (ar.IsStoring())
+	{	// storing code
+		ar << m_pointStart << m_pointEnd;
+	}
+	else
+	{	// loading code
+		ar >> m_pointStart >> m_pointEnd;
+	}
+}
+
+（55）打开类视图，点击CMyDrawLineDoc类，在下方窗口中双击Serialize函数，输入：
+void CMyDrawLineDoc::Serialize(CArchive& ar)
+{
+	if (ar.IsStoring())
+	{
+		// TODO: add storing code here
+		m_arrayLines.Serialize(ar);
+	}
+	else
+	{
+		// TODO: add loading code here
+		m_arrayLines.Serialize(ar);
+	}
+}
+
+（56）同样，双击AddLine函数，用下面内容替换原函数内容：
+void CMyDrawLineDoc::AddLine(CPoint pointStart,CPoint pointEnd)
+{
+	CMyLine* pMyLine = new CMyLine(pointStart,pointEnd);
+	m_arrayLines.Add(pMyLine);
+	SetModifiedFlag();
+}
+
+（57）同样，双击OnUndo函数，用下面内容替换原函数内容：
+void CMyDrawLineDoc::OnUndo()
+{
+	int index;
+
+	index = m_arrayLines.GetUpperBound();
+	if (index >= 0) {
+		m_array2Lines.Add(m_arrayLines.GetAt(index));
+		m_arrayLines.RemoveAt(index);
+		UpdateAllViews(NULL);
+		SetModifiedFlag();
+	}
+}
+
+（58）同样，双击OnRedo函数，用下面内容替换原函数内容：
+void CMyDrawLineDoc::OnRedo()
+{
+	int index;
+
+	index = m_array2Lines.GetUpperBound();
+	if (index >= 0) {
+		m_arrayLines.Add(m_array2Lines.GetAt(index));
+		m_array2Lines.RemoveAt(index);
+		UpdateAllViews(NULL);
+		SetModifiedFlag();
+	}
+}
+
+（59）按F7 build工程，按Ctrl+F5运行程序；
+
+（60）在程序客户区，可以画线，然后按Ctrl+Z进行Undo操作，按Ctrl+Y进行Redo操作，点击“保存”按钮，将这些线保存到文件中，点击“打开”按钮，可以读取保存的线；
