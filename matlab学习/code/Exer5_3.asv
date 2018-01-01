@@ -1,0 +1,7 @@
+x1 = -2:0.1:2;
+x2 = -2:0.1:2;
+y1 = x1 .* sin(x2);
+plot3(x1, x2, y1);
+hold on
+y2 = x2 .* cos(x1);
+plot3(x1, x2, y1);

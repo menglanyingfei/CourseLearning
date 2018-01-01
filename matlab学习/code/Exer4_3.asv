@@ -1,0 +1,10 @@
+userInput = input('请输入1或2: ');
+if userInput == 1
+    Exer4_1;
+else if userInput == 2
+    num = input('请输入序列长度');
+    functionDemo(num);
+else
+        echo '输入错误!';
+
+    end
