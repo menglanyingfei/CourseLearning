@@ -1,0 +1,11 @@
+E:\FormApplication\FormApplication\bin\Debug\FormApplication.exe
+E:\FormApplication\FormApplication\bin\Debug\FormApplication.pdb
+E:\FormApplication\FormApplication\obj\x86\Debug\ResolveAssemblyReference.cache
+E:\FormApplication\FormApplication\obj\x86\Debug\FormApplication.Form1.resources
+E:\FormApplication\FormApplication\obj\x86\Debug\FormApplication.Properties.Resources.resources
+E:\FormApplication\FormApplication\obj\x86\Debug\GenerateResource.read.1.tlog
+E:\FormApplication\FormApplication\obj\x86\Debug\GenerateResource.write.1.tlog
+E:\FormApplication\FormApplication\obj\x86\Debug\FormApplication.exe
+E:\FormApplication\FormApplication\obj\x86\Debug\FormApplication.pdb
+G:\FormApplication\FormApplication\obj\x86\Debug\FormApplication.exe
+G:\FormApplication\FormApplication\obj\x86\Debug\FormApplication.pdb

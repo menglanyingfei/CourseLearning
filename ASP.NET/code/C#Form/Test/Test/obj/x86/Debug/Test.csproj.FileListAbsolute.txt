@@ -1,0 +1,17 @@
+E:\Test\Test\bin\Debug\Test.exe
+E:\Test\Test\bin\Debug\Test.pdb
+E:\Test\Test\obj\x86\Debug\ResolveAssemblyReference.cache
+E:\Test\Test\obj\x86\Debug\Test.Properties.Resources.resources
+E:\Test\Test\obj\x86\Debug\GenerateResource.read.1.tlog
+E:\Test\Test\obj\x86\Debug\GenerateResource.write.1.tlog
+E:\Test\Test\obj\x86\Debug\Test.exe
+E:\Test\Test\obj\x86\Debug\Test.pdb
+E:\Test\Test\obj\x86\Debug\Test.FormMain.resources
+G:\大三上学期-ASP.NET\Test\Test\obj\x86\Debug\Test.exe
+G:\大三上学期-ASP.NET\Test\Test\obj\x86\Debug\Test.pdb
+G:\大三上学期-ASP.NET\Test\Test\bin\Debug\Test.exe
+G:\大三上学期-ASP.NET\Test\Test\bin\Debug\Test.pdb
+G:\大三上学期-ASP.NET\Test\Test\obj\x86\Debug\Test.csprojResolveAssemblyReference.cache
+G:\大三上学期-ASP.NET\Test\Test\obj\x86\Debug\Test.FormMain.resources
+G:\大三上学期-ASP.NET\Test\Test\obj\x86\Debug\Test.Properties.Resources.resources
+G:\大三上学期-ASP.NET\Test\Test\obj\x86\Debug\Test.csproj.GenerateResource.Cache
